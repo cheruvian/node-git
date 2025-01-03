@@ -5,7 +5,7 @@
   "type": "module",
   "description": "A (neutered) GitHub CLI that uses the GitHub API instead of git binary",
   "bin": {
-    "git-api": "./src/cli.js"
+    "bolt-git": "./src/cli.js"
   },
   "files": [
     "src",
