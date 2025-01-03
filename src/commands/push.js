@@ -2,6 +2,7 @@ import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
 import { getRepo } from '../github/api.js';
 import { createCommit } from '../github/commits.js';
+import { initializeGitDirectory } from '../utils/gitInit.js';
 import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
@@ -15,6 +16,9 @@ export async function push(repoPath, directory = '.') {
     if (!owner || !repo) {
       throw new Error('Invalid repository format. Use owner/repo');
     }
+
+    // Initialize git directory
+    initializeGitDirectory(directory);
 
     // Verify repository exists
     const repository = await getRepo(owner, repo);
