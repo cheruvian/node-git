@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/cli.js"
+    "start": "node src/cli.js",
+    "submodule:clone": "node src/cli.js submodule add",
+    "submodule:push": "node src/cli.js submodule push",
+    "submodule:pull": "node src/cli.js submodule pull",
+    "submodule:status": "node src/cli.js submodule status"
   },
   "dependencies": {
     "commander": "^11.1.0",

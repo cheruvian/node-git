@@ -6,6 +6,7 @@ import { diff } from './commands/diff.js';
 import { push } from './commands/push.js';
 import { remote } from './commands/remote.js';
 import { init } from './commands/init.js';
+import { submodule } from './commands/submodule.js';
 
 config();
 
@@ -49,5 +50,13 @@ program
   .description('Show changes between working tree and snapshot')
   .argument('[filepath]', 'Optional file path to show diff for')
   .action(diff);
+
+program
+  .command('submodule')
+  .description('Manage submodules')
+  .argument('<command>', 'Command to execute (add, init, update, status)')
+  .argument('[repo]', 'Repository in format owner/repo')
+  .option('-p, --path <path>', 'Path where to add the submodule', 'repo')
+  .action((command, repo, options) => submodule(command, repo, options));
 
 program.parse();
