@@ -1,23 +1,46 @@
-import chalk from 'chalk';
+import { logger } from '../utils/logger.js';
+import { getIgnorePatterns } from '../utils/ignore.js';
+import { shouldIgnoreFile, showFileDiff } from '../utils/diff.js';
+import { glob } from 'glob';
 import fs from 'fs';
 import path from 'path';
-import { createPatch } from 'diff';
-import { logger } from '../utils/logger.js';
 
 export async function diff(filepath) {
   try {
+    // Check if we're in a git repository
     const snapshotPath = path.join('_git', 'snapshot.json');
     if (!fs.existsSync(snapshotPath)) {
       throw new Error('Not a git repository');
     }
 
+    // Read snapshot
     const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8'));
+    
+    // Get ignore patterns
+    const ignorePatterns = getIgnorePatterns();
 
     if (filepath) {
-      showFileDiff(filepath, snapshot);
+      // Single file diff
+      if (!shouldIgnoreFile(filepath, ignorePatterns)) {
+        showFileDiff(filepath, snapshot);
+      }
     } else {
-      for (const file of Object.keys(snapshot)) {
-        if (fs.existsSync(file)) {
+      // Get all files in working directory and snapshot
+      const workingFiles = await glob('**/*', {
+        dot: true,
+        nodir: true,
+        ignore: ['_git/**', '_git']
+      });
+
+      // Combine and deduplicate files
+      const allFiles = [...new Set([
+        ...workingFiles,
+        ...Object.keys(snapshot)
+      ])];
+
+      // Show diffs for non-ignored files
+      for (const file of allFiles) {
+        if (!shouldIgnoreFile(file, ignorePatterns)) {
           showFileDiff(file, snapshot);
         }
       }
@@ -26,31 +49,4 @@ export async function diff(filepath) {
     logger.error(`Diff failed: ${error.message}`);
     process.exit(1);
   }
-}
-
-function showFileDiff(filepath, snapshot) {
-  if (!fs.existsSync(filepath)) {
-    console.log(chalk.red(`File ${filepath} was deleted`));
-    return;
-  }
-
-  const currentContent = fs.readFileSync(filepath, 'utf-8');
-  const snapshotContent = snapshot[filepath] || '';
-  
-  if (currentContent === snapshotContent) {
-    return; // Skip files with no changes
-  }
-
-  const patch = createPatch(filepath, snapshotContent, currentContent);
-  console.log(chalk.bold(`\nDiff for ${filepath}:`));
-  
-  patch.split('\n').forEach(line => {
-    if (line.startsWith('+')) {
-      console.log(chalk.green(line));
-    } else if (line.startsWith('-')) {
-      console.log(chalk.red(line));
-    } else {
-      console.log(line);
-    }
-  });
 }

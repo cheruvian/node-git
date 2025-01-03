@@ -15,10 +15,14 @@ export async function status() {
     const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8'));
     const snapshotFiles = Object.keys(snapshot);
 
+    // Get ignore patterns
+    const ignorePatterns = getIgnorePatterns();
+
+    // Get all files except ignored ones
     const currentFiles = await glob('**/*', { 
       dot: true,
       nodir: true,
-      ignore: getIgnorePatterns()
+      ignore: ignorePatterns
     });
 
     const modified = [];

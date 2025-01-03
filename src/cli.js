@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { program } from 'commander';
 import { config } from 'dotenv';
 import { clone } from './commands/clone.js';
@@ -8,12 +9,13 @@ import { remote } from './commands/remote.js';
 import { init } from './commands/init.js';
 import { submodule } from './commands/submodule.js';
 
+// Load .env file if it exists
 config();
 
 program
-  .name('ghcli')
+  .name('git-api')
   .description('GitHub CLI using GitHub API')
-  .version('1.0.0');
+  .version(process.env.npm_package_version || '1.0.0');
 
 program
   .command('init')

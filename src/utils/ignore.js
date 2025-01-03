@@ -7,6 +7,8 @@ const DEFAULT_PATTERNS = [
   '**/node_modules/**',
   '**/_git/**',
   '_git',
+  '.git/**',
+  '.env',
   'package-lock.json'
 ];
 
@@ -40,7 +42,7 @@ export function getIgnorePatterns(directory = '.') {
             if (pattern.endsWith('/')) {
               return `${pattern}**`;
             }
-            return pattern;
+            return `**/${pattern}`;
           });
 
         // Update cache
@@ -60,27 +62,4 @@ export function getIgnorePatterns(directory = '.') {
   }
 
   return patterns;
-}
-
-export function addToGitignore(pattern, directory = '.') {
-  const gitignorePath = path.join(directory, '.gitignore');
-  let content = '';
-
-  if (fs.existsSync(gitignorePath)) {
-    content = fs.readFileSync(gitignorePath, 'utf-8');
-    if (content && !content.endsWith('\n')) {
-      content += '\n';
-    }
-  }
-
-  if (!content.includes(pattern)) {
-    content += `${pattern}\n`;
-    fs.writeFileSync(gitignorePath, content);
-    // Invalidate cache
-    gitignoreCache.mtime = 0;
-    logger.debug(`Added ${pattern} to .gitignore`);
-    return true;
-  }
-
-  return false;
 }
