@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { program } from 'commander';
 import { config } from 'dotenv';
 import { clone } from './commands/clone.js';
@@ -8,6 +7,8 @@ import { remove } from './commands/remove.js';
 import { status } from './commands/status.js';
 import { diff } from './commands/diff.js';
 import { push } from './commands/push.js';
+import { remote } from './commands/remote.js';
+import { init } from './commands/init.js';
 
 config();
 
@@ -17,17 +18,28 @@ program
   .version('1.0.0');
 
 program
+  .command('init')
+  .description('Initialize a new git repository')
+  .action(init);
+
+program
   .command('clone')
   .description('Clone a repository')
   .argument('<repo>', 'Repository in format owner/repo')
   .action(clone);
 
 program
+  .command('remote')
+  .description('Manage remote repositories')
+  .argument('<command>', 'Command to execute (add, show)')
+  .argument('[repo]', 'Repository in format owner/repo')
+  .action(remote);
+
+program
   .command('push')
-  .description('Push code to an existing repository')
-  .argument('<repo>', 'Repository in format owner/repo')
+  .description('Push code to remote repository')
   .option('-d, --directory <dir>', 'Directory to push', '.')
-  .action((repo, options) => push(repo, options.directory));
+  .action(push);
 
 program
   .command('add')

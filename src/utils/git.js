@@ -1,33 +1,50 @@
-import { execSync } from 'child_process';
-import { logger } from './logger.js';
 import fs from 'fs';
 import path from 'path';
+import { minimatch } from 'minimatch';
+import { logger } from './logger.js';
 
-export function initGitRepo(directory) {
+// Git directory management
+export function initGitDir(directory = '.') {
+  const gitDir = path.join(directory, '.git');
+  if (fs.existsSync(gitDir)) return;
+
+  // Create basic structure
+  ['objects', 'refs/heads', 'refs/tags', 'info', 'hooks'].forEach(dir => {
+    fs.mkdirSync(path.join(gitDir, dir), { recursive: true });
+  });
+
+  // Initialize basic files
+  fs.writeFileSync(path.join(gitDir, 'config'), '[core]\n\tbare = false');
+  fs.writeFileSync(path.join(gitDir, 'HEAD'), 'ref: refs/heads/main\n');
+}
+
+// Remote state handling
+export function getRemoteInfo() {
   try {
-    const gitPath = path.join(directory, '.git');
-    if (fs.existsSync(gitPath)) {
-      logger.debug('Git repository already initialized');
-      return;
-    }
+    const config = fs.readFileSync(path.join('.git', 'config'), 'utf-8');
+    const match = config.match(/url = https:\/\/github\.com\/(.+)\/(.+)\.git/);
+    return match ? { owner: match[1], repo: match[2] } : null;
+  } catch {
+    return null;
+  }
+}
 
-    logger.debug('Initializing git repository...');
-    execSync('git init', { cwd: directory });
-    
-    // Create initial .gitignore if it doesn't exist
-    const gitignorePath = path.join(directory, '.gitignore');
-    if (!fs.existsSync(gitignorePath)) {
-      const defaultGitignore = [
-        'node_modules/',
-        '.env',
-        '.DS_Store',
-        '*.log'
-      ].join('\n');
-      fs.writeFileSync(gitignorePath, defaultGitignore);
-    }
-    
-    logger.debug('Git repository initialized successfully');
-  } catch (error) {
-    throw new Error(`Failed to initialize git repository: ${error.message}`);
+// Gitignore handling
+export function getIgnoredFiles(files, directory = '.') {
+  const patterns = getIgnorePatterns(directory);
+  return files.filter(file => !patterns.some(pattern => 
+    minimatch(file.replace(/\\/g, '/'), pattern, { dot: true, matchBase: true })
+  ));
+}
+
+function getIgnorePatterns(directory) {
+  try {
+    const content = fs.readFileSync(path.join(directory, '.gitignore'), 'utf-8');
+    return content.split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'))
+      .map(pattern => pattern.startsWith('/') ? pattern.slice(1) : `**/${pattern}`);
+  } catch {
+    return [];
   }
 }

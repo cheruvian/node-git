@@ -2,36 +2,37 @@ import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
 import { getRepo } from '../github/api.js';
 import { createCommit } from '../github/commits.js';
-import { initializeGitDirectory } from '../utils/gitInit.js';
+import { readConfig } from '../utils/config.js';
+import { glob } from 'glob';
+import { getIgnorePatterns } from '../utils/ignore.js';
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
 
-export async function push(repoPath, directory = '.') {
+export async function push(options) {
   try {
     validateGitHubToken();
 
-    // Parse owner and repo
-    const [owner, repo] = repoPath.split('/');
-    if (!owner || !repo) {
-      throw new Error('Invalid repository format. Use owner/repo');
+    // Read remote configuration
+    const config = readConfig();
+    if (!config.remote?.origin) {
+      throw new Error('No remote repository configured. Use "remote add" first.');
     }
 
-    // Initialize git directory
-    initializeGitDirectory(directory);
+    const { owner, repo } = config.remote.origin;
+    const directory = options.directory || '.';
 
     // Verify repository exists
-    const repository = await getRepo(owner, repo);
-    logger.info(`Pushing to ${repository.full_name}...`);
+    await getRepo(owner, repo);
+    logger.info(`Pushing to ${owner}/${repo}...`);
 
-    // Get all files in directory
+    // Get all files except ignored ones
     const files = await glob('**/*', { 
       cwd: directory,
       nodir: true,
-      ignore: ['node_modules/**', '.git/**', '.env']
+      ignore: getIgnorePatterns(directory)
     });
 
-    // Prepare changes
+    // Prepare changes for commit
     const changes = files.map(file => ({
       path: file,
       mode: '100644',
@@ -39,10 +40,9 @@ export async function push(repoPath, directory = '.') {
       content: fs.readFileSync(path.join(directory, file), 'utf-8')
     }));
 
-    // Create commit with all files
-    await createCommit(owner, repo, 'Initial commit', changes);
-
-    logger.success(`✓ Code pushed to ${repository.html_url}`);
+    // Create commit with changes
+    await createCommit(owner, repo, 'Update from CLI', changes);
+    logger.success(`✓ Code pushed to https://github.com/${owner}/${repo}`);
   } catch (error) {
     logger.error(`Push failed: ${error.message}`);
     process.exit(1);

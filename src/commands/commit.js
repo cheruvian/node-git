@@ -1,7 +1,7 @@
-import { createCommit } from '../github/commits.js';
-import { getGitStatus } from './status.js';
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
+import { createCommit } from '../github/commits.js';
+import { getGitStatus } from '../utils/status.js';
 import fs from 'fs';
 import path from 'path';
 

@@ -1,8 +1,9 @@
-import { getRepo, getContent } from '../github/api.js';
-import { validateGitHubToken } from '../utils/validation.js';
 import { logger } from '../utils/logger.js';
+import { validateGitHubToken } from '../utils/validation.js';
+import { getRepo } from '../github/api.js';
+import { downloadContents } from '../github/content.js';
 import { writeFile, createDirectory } from '../utils/fs.js';
-import { initGitRepo } from '../utils/git.js';
+import { createSnapshot } from '../utils/snapshot.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -42,8 +43,9 @@ async function cloneRepository(owner, repo) {
   process.chdir(repo);
   
   try {
-    await downloadContents(owner, repo);
-    initGitRepo('.');
+    await processContents(owner, repo);
+    createDirectory('_git');
+    await createSnapshot('.');
   } catch (error) {
     logger.error(`Failed to download contents: ${error.message}`);
     throw error;
@@ -52,23 +54,18 @@ async function cloneRepository(owner, repo) {
   }
 }
 
-async function downloadContents(owner, repo, currentPath = '') {
-  const contents = await getContent(owner, repo, currentPath);
+async function processContents(owner, repo, currentPath = '') {
+  const contents = await downloadContents(owner, repo, currentPath);
   
   for (const item of contents) {
     const itemPath = path.join(currentPath, item.name);
-    logger.debug(`Processing: ${item.name}`);
+    logger.debug(`Processing: ${itemPath}`);
     
     if (item.type === 'dir') {
       createDirectory(itemPath);
-      await downloadContents(owner, repo, itemPath);
-    } else if (item.type === 'file') {
-      if (!item.content) {
-        const fileContent = await getContent(owner, repo, itemPath);
-        item.content = fileContent[0].content;
-      }
-      const content = Buffer.from(item.content, 'base64').toString('utf-8');
-      writeFile(itemPath, content);
+      await processContents(owner, repo, itemPath);
+    } else if (item.type === 'file' && item.content) {
+      writeFile(itemPath, item.content);
     }
   }
 }
