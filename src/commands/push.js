@@ -3,6 +3,7 @@ import { validateGitHubToken } from '../utils/validation.js';
 import { getRepo } from '../github/api.js';
 import { createCommit } from '../github/commits.js';
 import { readConfig } from '../utils/config.js';
+import { createSnapshot } from '../utils/snapshot.js';
 import { glob } from 'glob';
 import { getIgnorePatterns } from '../utils/ignore.js';
 import fs from 'fs';
@@ -42,6 +43,10 @@ export async function push(options) {
 
     // Create commit with changes
     await createCommit(owner, repo, 'Update from CLI', changes);
+    
+    // Update snapshot after successful push
+    await createSnapshot(directory);
+    
     logger.success(`✓ Code pushed to https://github.com/${owner}/${repo}`);
   } catch (error) {
     logger.error(`Push failed: ${error.message}`);
