@@ -1,9 +1,6 @@
 import { program } from 'commander';
 import { config } from 'dotenv';
 import { clone } from './commands/clone.js';
-import { commit } from './commands/commit.js';
-import { add } from './commands/add.js';
-import { remove } from './commands/remove.js';
 import { status } from './commands/status.js';
 import { diff } from './commands/diff.js';
 import { push } from './commands/push.js';
@@ -38,20 +35,9 @@ program
 program
   .command('push')
   .description('Push code to remote repository')
+  .argument('<message>', 'Commit message')
   .option('-d, --directory <dir>', 'Directory to push', '.')
-  .action(push);
-
-program
-  .command('add')
-  .description('Add files to staging')
-  .argument('[files...]', 'Files to add')
-  .action(add);
-
-program
-  .command('remove')
-  .description('Remove files')
-  .argument('[files...]', 'Files to remove')
-  .action(remove);
+  .action((message, options) => push(message, options));
 
 program
   .command('status')
@@ -60,14 +46,8 @@ program
 
 program
   .command('diff')
-  .description('Show changes between commits, commit and working tree, etc')
+  .description('Show changes between working tree and snapshot')
   .argument('[filepath]', 'Optional file path to show diff for')
   .action(diff);
-
-program
-  .command('commit')
-  .description('Commit changes')
-  .argument('<message>', 'Commit message')
-  .action(commit);
 
 program.parse();

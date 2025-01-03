@@ -9,9 +9,13 @@ import { getIgnorePatterns } from '../utils/ignore.js';
 import fs from 'fs';
 import path from 'path';
 
-export async function push(options) {
+export async function push(message, options) {
   try {
     validateGitHubToken();
+
+    if (!message) {
+      throw new Error('Commit message is required');
+    }
 
     // Read remote configuration
     const config = readConfig();
@@ -42,7 +46,7 @@ export async function push(options) {
     }));
 
     // Create commit with changes
-    await createCommit(owner, repo, 'Update from CLI', changes);
+    await createCommit(owner, repo, message, changes);
     
     // Update snapshot after successful push
     await createSnapshot(directory);
