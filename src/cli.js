@@ -8,6 +8,7 @@ import { push } from './commands/push.js';
 import { remote } from './commands/remote.js';
 import { init } from './commands/init.js';
 import { submodule } from './commands/submodule.js';
+import { reset } from './commands/reset.js';
 
 // Load .env file if it exists
 config();
@@ -52,6 +53,12 @@ program
   .description('Show changes between working tree and snapshot')
   .argument('[filepath]', 'Optional file path to show diff for')
   .action(diff);
+
+program
+  .command('reset')
+  .description('Reset working tree to last snapshot')
+  .argument('[filepath]', 'Optional file path to reset')
+  .action(reset);
 
 program
   .command('submodule')

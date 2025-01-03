@@ -34,6 +34,7 @@ git-api <command>
 - `git-api push <message>` - Push changes with commit message
 - `git-api status` - Show working tree status
 - `git-api diff [filepath]` - Show changes
+- `git-api reset [filepath]` - Reset to last snapshot
 - `git-api remote add owner/repo` - Add remote repository
 - `git-api remote show` - Show remote info
 - `git-api submodule add owner/repo` - Add a submodule
