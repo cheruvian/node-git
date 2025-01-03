@@ -1,8 +1,9 @@
 {
-  "name": "@stackblitz/git-api",
+  "name": "@cheruvian/bolt-git",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "description": "A GitHub CLI that uses the GitHub API instead of git binary",
+  "description": "A (neutered) GitHub CLI that uses the GitHub API instead of git binary",
   "bin": {
     "git-api": "./src/cli.js"
   },
@@ -13,10 +14,7 @@
   ],
   "scripts": {
     "start": "node src/cli.js",
-    "submodule:clone": "node src/cli.js submodule add",
-    "submodule:push": "node src/cli.js submodule push",
-    "submodule:pull": "node src/cli.js submodule pull",
-    "submodule:status": "node src/cli.js submodule status"
+    "postinstall": "chmod +x ./src/cli.js"
   },
   "dependencies": {
     "commander": "^11.1.0",
@@ -26,26 +24,14 @@
     "diff": "^5.1.0",
     "minimatch": "^9.0.3"
   },
-  "keywords": [
-    "git",
-    "github",
-    "cli",
-    "api"
-  ],
-  "author": "StackBlitz",
-  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stackblitz/git-api.git"
+    "url": "git+https://github.com/cheruvian/bolt-git.git"
   },
-  "bugs": {
-    "url": "https://github.com/stackblitz/git-api/issues"
-  },
-  "homepage": "https://github.com/stackblitz/git-api#readme",
   "engines": {
     "node": ">=16"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
