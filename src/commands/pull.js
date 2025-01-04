@@ -8,6 +8,7 @@ import { detectLocalChanges } from '../utils/changes.js';
 import { displayChanges } from '../utils/display.js';
 import { syncWithRemote } from '../utils/sync.js';
 import { updateLocalCommit } from '../utils/commits.js';
+import { writeConfig, readConfig } from '../utils/config.js';
 
 export async function pull(options = { force: false }) {
   try {
@@ -42,15 +43,15 @@ export async function pull(options = { force: false }) {
     // Download and sync only changed files
     if (remoteChanges) {
       logger.info('\nChanges to pull:');
-      if (remoteChanges.added.length) {
+      if (remoteChanges.added?.length) {
         logger.info('\nNew files:');
         remoteChanges.added.forEach(f => logger.info(`  + ${f}`));
       }
-      if (remoteChanges.modified.length) {
+      if (remoteChanges.modified?.length) {
         logger.info('\nModified files:');
         remoteChanges.modified.forEach(f => logger.info(`  * ${f}`));
       }
-      if (remoteChanges.deleted.length) {
+      if (remoteChanges.deleted?.length) {
         logger.info('\nDeleted files:');
         remoteChanges.deleted.forEach(f => logger.info(`  - ${f}`));
       }
@@ -58,8 +59,10 @@ export async function pull(options = { force: false }) {
 
     await downloadFiles(remote.owner, remote.repo, ignorePatterns, remoteChanges);
     
-    // Update local commit after successful sync
-    await updateLocalCommit(remoteCommit);
+    // Update config with new commit SHA
+    const config = readConfig();
+    config.lastCommit = remoteCommit;
+    writeConfig(config);
     
     // Create new snapshot
     await createSnapshot('.');
