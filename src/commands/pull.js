@@ -28,14 +28,15 @@ export async function pull(options = { force: false }) {
       if (!options.force) {
         throw new Error('Cannot pull with local changes. Commit or reset your changes first, or use --force to override.');
       }
+      logger.warn('Force pulling with local changes...');
     }
 
     logger.info(`Pulling from ${remote.owner}/${remote.repo}...`);
     
-    // Download latest files from GitHub
-    await downloadFiles(remote.owner, remote.repo);
+    // Download and sync files
+    const syncChanges = await downloadFiles(remote.owner, remote.repo, ignorePatterns);
     
-    // Create new snapshot after pull
+    // Create new snapshot after successful pull
     await createSnapshot('.');
     
     logger.success('✓ Pull completed successfully');
