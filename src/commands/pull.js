@@ -7,9 +7,10 @@ import { getIgnorePatterns } from '../utils/ignore.js';
 import { detectLocalChanges } from '../utils/changes.js';
 import { displayChanges } from '../utils/display.js';
 import { syncWithRemote } from '../utils/sync.js';
-import { updateConfig, readConfig } from '../utils/config.js';
+import { updateConfig } from '../utils/config.js';
 
-export async function pull(options = { force: false }) {
+export async function pull(options = { force: false, dryRun: false }) {
+  throw new Error()
   try {
     validateGitHubToken();
     
@@ -29,7 +30,7 @@ export async function pull(options = { force: false }) {
       throw new Error('Cannot pull with local changes. Commit or reset your changes first, or use --force to override.');
     }
 
-    logger.info(`Pulling from ${remote.owner}/${remote.repo}...`);
+    logger.info(`${options.dryRun ? '[DRY RUN] ' : ''}Pulling from ${remote.owner}/${remote.repo}...`);
     
     // Get remote changes based on commit diff
     const { remoteCommit, changes: remoteChanges } = await syncWithRemote(
@@ -39,7 +40,7 @@ export async function pull(options = { force: false }) {
       ignorePatterns
     );
 
-    // Download and sync only changed files
+    // Show changes that would be pulled
     if (remoteChanges) {
       logger.info('\nChanges to pull:');
       if (remoteChanges.added?.length) {
@@ -56,6 +57,13 @@ export async function pull(options = { force: false }) {
       }
     }
 
+    // Exit early if this is a dry run
+    if (options.dryRun) {
+      logger.info('\n[DRY RUN] No changes were made');
+      return;
+    }
+
+    // Actually perform the changes
     await downloadFiles(remote.owner, remote.repo, ignorePatterns, remoteChanges);
     
     // Update config with new commit SHA

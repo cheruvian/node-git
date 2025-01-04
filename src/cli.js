@@ -10,6 +10,7 @@ import { remote } from './commands/remote.js';
 import { init } from './commands/init.js';
 import { submodule } from './commands/submodule.js';
 import { reset } from './commands/reset.js';
+import { attach } from './commands/attach.js';
 
 // Load .env file if it exists
 config();
@@ -31,6 +32,12 @@ program
   .action(clone);
 
 program
+  .command('attach')
+  .description('Initialize current directory and clone repository into it')
+  .argument('<repo>', 'Repository in format owner/repo')
+  .action(attach);
+
+program
   .command('remote')
   .description('Manage remote repositories')
   .argument('<command>', 'Command to execute (add, show)')
@@ -48,6 +55,7 @@ program
   .command('pull')
   .description('Pull latest changes from remote repository')
   .option('-f, --force', 'Force pull even with local changes', false)
+  .option('--dry-run', 'Show what would be pulled without making changes', false)
   .action((options) => pull(options));
 
 program
