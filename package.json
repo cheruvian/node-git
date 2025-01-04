@@ -5,20 +5,24 @@
   "type": "module",
   "description": "A (neutered) GitHub CLI that uses the GitHub API instead of git binary",
   "bin": {
-    "bolt-git": "./src/cli.js"
+    "bolt-git": "./dist/cli.js"
   },
   "files": [
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "start": "node src/cli.js",
-    "postinstall": "chmod +x ./src/cli.js"
+    "build": "node build.js",
+    "postinstall": "chmod +x ./dist/cli.js"
   },
   "dependencies": {
     "commander": "^11.1.0",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.8",
     "chalk": "^5.3.0",
     "glob": "^10.3.10",
     "diff": "^5.1.0",
