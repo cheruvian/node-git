@@ -4,6 +4,8 @@ import { getRepo } from '../github/api.js';
 import { downloadContents } from '../github/content.js';
 import { writeFile, createDirectory, ensureDir } from '../utils/fs.js';
 import { createSnapshot } from '../utils/snapshot.js';
+import { getLatestCommit } from '../utils/commits.js';
+import { writeConfig } from '../utils/config.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -38,7 +40,8 @@ function validateInput(repoPath) {
 async function cloneRepository(owner, repo) {
   logger.info(`Cloning ${owner}/${repo}...`);
   
-  await getRepo(owner, repo);
+  const repoResp = await getRepo(owner, repo);
+  logger.info(JSON.stringify(repoResp))
   createDirectory(repo);
   const currentDir = process.cwd();
   
@@ -48,10 +51,14 @@ async function cloneRepository(owner, repo) {
     // Create _git directory first
     ensureDir('_git');
     
+    // Get latest commit hash
+    const commitHash = await getLatestCommit(owner, repo);
+    logger.info(`Latest commit: ${commitHash}`);
+    
     // Download repository contents
     await processContents(owner, repo);
     
-    // Initialize config with remote info
+    // Initialize config with remote info and commit hash
     const config = {
       remote: {
         origin: {
@@ -59,12 +66,12 @@ async function cloneRepository(owner, repo) {
           repo,
           url: `https://github.com/${owner}/${repo}.git`
         }
-      }
+      },
+      lastCommit: commitHash
     };
-    writeFile('_git/config.json', JSON.stringify(config, null, 2));
+    writeConfig(config);
 
     // Create initial snapshot after all files are downloaded
-    // This needs to happen after .gitignore is downloaded
     await createSnapshot('.');
     
   } catch (error) {

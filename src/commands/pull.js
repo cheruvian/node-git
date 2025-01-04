@@ -7,8 +7,7 @@ import { getIgnorePatterns } from '../utils/ignore.js';
 import { detectLocalChanges } from '../utils/changes.js';
 import { displayChanges } from '../utils/display.js';
 import { syncWithRemote } from '../utils/sync.js';
-import { updateLocalCommit } from '../utils/commits.js';
-import { writeConfig, readConfig } from '../utils/config.js';
+import { updateConfig, readConfig } from '../utils/config.js';
 
 export async function pull(options = { force: false }) {
   try {
@@ -60,9 +59,16 @@ export async function pull(options = { force: false }) {
     await downloadFiles(remote.owner, remote.repo, ignorePatterns, remoteChanges);
     
     // Update config with new commit SHA
-    const config = readConfig();
-    config.lastCommit = remoteCommit;
-    writeConfig(config);
+    updateConfig({
+      remote: {
+        origin: {
+          owner: remote.owner,
+          repo: remote.repo,
+          url: `https://github.com/${remote.owner}/${remote.repo}.git`
+        }
+      },
+      lastCommit: remoteCommit
+    });
     
     // Create new snapshot
     await createSnapshot('.');

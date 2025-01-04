@@ -1,15 +1,25 @@
 import { logger } from './logger.js';
-import { getLatestCommit, getLocalCommit, updateLocalCommit, getCommitDiff } from './commits.js';
-import { syncFiles } from './fileSync.js';
+import { getLatestCommit, getLocalCommit, getCommitDiff } from './commits.js';
+import { getContent } from '../github/api.js';
 
 export async function syncWithRemote(owner, repo, localFiles, ignorePatterns) {
   const localCommit = getLocalCommit();
   const remoteCommit = await getLatestCommit(owner, repo);
 
-  // If no local commit, treat all files as new
+  // If no local commit, get list of all files from remote
   if (!localCommit) {
     logger.info('No local commit found, performing full sync...');
-    return { remoteCommit };
+    const contents = await getContent(owner, repo);
+    
+    const changes = {
+      added: contents
+        .filter(item => item.type === 'file')
+        .map(item => item.path),
+      modified: [],
+      deleted: []
+    };
+
+    return { remoteCommit, changes };
   }
 
   // Get changes between commits

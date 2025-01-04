@@ -5,10 +5,11 @@ import { minimatch } from 'minimatch';
 import { logger } from './logger.js';
 import { getIgnorePatterns } from './ignore.js';
 import { ensureDir } from './fs.js';
-import { getSnapshotPath, GIT_IGNORE_PATTERNS } from './gitPaths.js';
+import { getGitPath, GIT_IGNORE_PATTERNS, GIT_DIR } from './gitPaths.js';
 
 export async function createSnapshot(directory = '.') {
-  ensureDir(path.join(directory, '.git'));
+  // Ensure git directory exists
+  ensureDir(path.join(directory, GIT_DIR));
 
   const ignorePatterns = getIgnorePatterns(directory);
 
@@ -32,7 +33,7 @@ export async function createSnapshot(directory = '.') {
     }
   }
 
-  const snapshotPath = getSnapshotPath();
+  const snapshotPath = getGitPath('snapshot.json');
   fs.writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2));
   logger.debug(`Created repository snapshot with ${Object.keys(snapshot).length} files`);
   
@@ -40,7 +41,7 @@ export async function createSnapshot(directory = '.') {
 }
 
 export function readSnapshot(directory = '.') {
-  const snapshotPath = getSnapshotPath();
+  const snapshotPath = getGitPath('snapshot.json');
   if (!fs.existsSync(snapshotPath)) {
     return {};
   }

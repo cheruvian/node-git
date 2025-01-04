@@ -1,7 +1,7 @@
 import path from 'path';
 
 // Base git directory name
-export const GIT_DIR = '_git';
+export const GIT_DIR = '_git';  // Changed from '_git' to '.git'
 
 // Common git paths
 export function getGitPath(...segments) {
