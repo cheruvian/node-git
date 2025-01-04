@@ -1,24 +1,22 @@
 import fs from 'fs';
-import path from 'path';
 import { logger } from './logger.js';
+import { getConfigPath } from './gitPaths.js';
 
 export function getRemoteState() {
   try {
-    const gitConfigPath = path.join('.git', 'config');
-    if (!fs.existsSync(gitConfigPath)) {
+    const configPath = getConfigPath();
+    if (!fs.existsSync(configPath)) {
       return null;
     }
 
-    const config = fs.readFileSync(gitConfigPath, 'utf-8');
-    const remoteMatch = config.match(/url = https:\/\/github\.com\/(.+)\/(.+)\.git/);
-    
-    if (!remoteMatch) {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    if (!config.remote?.origin) {
       return null;
     }
 
     return {
-      owner: remoteMatch[1],
-      repo: remoteMatch[2]
+      owner: config.remote.origin.owner,
+      repo: config.remote.origin.repo
     };
   } catch (error) {
     logger.debug(`Error reading git config: ${error.message}`);

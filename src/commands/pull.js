@@ -1,39 +1,44 @@
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
-import { getRepo, getContent } from '../github/api.js';
 import { getRemoteState } from '../utils/remoteState.js';
-import { writeFile } from '../utils/fs.js';
-import path from 'path';
+import { downloadFiles } from '../utils/download.js';
+import { createSnapshot, readSnapshot } from '../utils/snapshot.js';
+import { getIgnorePatterns } from '../utils/ignore.js';
+import { detectLocalChanges } from '../utils/changes.js';
+import { displayChanges } from '../utils/display.js';
 
-export async function pull() {
+export async function pull(options = { force: false }) {
   try {
     validateGitHubToken();
     
     const remote = getRemoteState();
     if (!remote) {
-      throw new Error('No GitHub remote configured');
+      throw new Error('No remote repository configured. Use "remote add" first.');
+    }
+
+    // Check for local changes
+    const snapshot = readSnapshot();
+    const ignorePatterns = getIgnorePatterns();
+    
+    const { hasChanges, changes } = await detectLocalChanges(snapshot, ignorePatterns);
+    
+    if (hasChanges) {
+      displayChanges(changes, snapshot);
+      
+      if (!options.force) {
+        throw new Error('Cannot pull with local changes. Commit or reset your changes first, or use --force to override.');
+      }
     }
 
     logger.info(`Pulling from ${remote.owner}/${remote.repo}...`);
     
-    // Get repository info
-    const repo = await getRepo(remote.owner, remote.repo);
-    const defaultBranch = repo.default_branch;
+    // Download latest files from GitHub
+    await downloadFiles(remote.owner, remote.repo);
     
-    // Get latest tree
-    const contents = await getContent(remote.owner, remote.repo);
+    // Create new snapshot after pull
+    await createSnapshot('.');
     
-    // Update index
-    const indexPath = path.join('.git', 'index');
-    const index = contents.map(item => ({
-      path: item.path,
-      mode: item.type === 'file' ? '100644' : '040000',
-      type: item.type,
-      sha: item.sha
-    }));
-    
-    writeFile(indexPath, JSON.stringify(index, null, 2));
-    logger.success('✓ Git index updated successfully');
+    logger.success('✓ Pull completed successfully');
   } catch (error) {
     logger.error(`Pull failed: ${error.message}`);
     process.exit(1);

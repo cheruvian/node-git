@@ -5,6 +5,7 @@ import { clone } from './commands/clone.js';
 import { status } from './commands/status.js';
 import { diff } from './commands/diff.js';
 import { push } from './commands/push.js';
+import { pull } from './commands/pull.js';
 import { remote } from './commands/remote.js';
 import { init } from './commands/init.js';
 import { submodule } from './commands/submodule.js';
@@ -42,6 +43,12 @@ program
   .argument('<message>', 'Commit message')
   .option('-d, --directory <dir>', 'Directory to push', '.')
   .action((message, options) => push(message, options));
+
+program
+  .command('pull')
+  .description('Pull latest changes from remote repository')
+  .option('-f, --force', 'Force pull even with local changes', false)
+  .action((options) => pull(options));
 
 program
   .command('status')
