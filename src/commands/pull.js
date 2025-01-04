@@ -10,7 +10,6 @@ import { syncWithRemote } from '../utils/sync.js';
 import { updateConfig } from '../utils/config.js';
 
 export async function pull(options = { force: false, dryRun: false }) {
-  throw new Error()
   try {
     validateGitHubToken();
     
