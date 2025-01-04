@@ -2,7 +2,7 @@ import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
 import { getRepo } from '../github/api.js';
 import { createCommit } from '../github/commits.js';
-import { readConfig } from '../utils/config.js';
+import { readConfig, writeConfig } from '../utils/config.js';
 import { createSnapshot } from '../utils/snapshot.js';
 import { glob } from 'glob';
 import { getIgnorePatterns } from '../utils/ignore.js';
@@ -46,7 +46,13 @@ export async function push(message, options) {
     }));
 
     // Create commit with changes
-    await createCommit(owner, repo, message, changes);
+    const newCommit = await createCommit(owner, repo, message, changes);
+    
+    // Update config with new commit SHA
+    writeConfig({
+      ...config,
+      lastCommit: newCommit.sha
+    });
     
     // Update snapshot after successful push
     await createSnapshot(directory);
