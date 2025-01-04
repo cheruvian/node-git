@@ -9,7 +9,9 @@ export async function downloadFiles(owner, repo, changedFiles = []) {
     return { added: [], updated: [], failed: [] };
   }
 
-  logger.info(`Downloading ${changedFiles.length} changed files...`);
+  logger.info(`Downloading ${changedFiles.length} changed files:`);
+  changedFiles.forEach(file => logger.info(`  ${file}`));
+
   const changes = {
     added: [],
     updated: [],
@@ -22,6 +24,7 @@ export async function downloadFiles(owner, repo, changedFiles = []) {
       if (content !== null) {
         writeFile(file, content);
         changes.added.push(file);
+        logger.success(`✓ Downloaded: ${file}`);
       }
     } catch (error) {
       logger.error(`Failed to download ${file}: ${error.message}`);
