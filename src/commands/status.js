@@ -4,6 +4,8 @@ import path from 'path';
 import { glob } from 'glob';
 import { logger } from '../utils/logger.js';
 import { getIgnorePatterns } from '../utils/ignore.js';
+import { getCommitInfo } from '../utils/status/commitInfo.js';
+import { displayCommitInfo } from '../utils/status/display.js';
 
 export async function status() {
   try {
@@ -47,6 +49,10 @@ export async function status() {
         added.push(file);
       }
     }
+
+    // Display commit info
+    const commitInfo = getCommitInfo();
+    displayCommitInfo(commitInfo);
 
     // Display status
     if (modified.length === 0 && added.length === 0 && deleted.length === 0) {
