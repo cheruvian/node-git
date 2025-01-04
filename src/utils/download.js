@@ -2,19 +2,31 @@ import { logger } from './logger.js';
 import { getContent } from '../github/api.js';
 import { syncFiles } from './fileSync.js';
 import { readSnapshot } from './snapshot.js';
+import path from 'path';
 
-export async function downloadFiles(owner, repo, ignorePatterns = []) {
-  const contents = await getContent(owner, repo);
-  const remoteFiles = {};
-  const localSnapshot = readSnapshot();
+async function fetchDirectoryContents(owner, repo, dirPath = '') {
+  const contents = await getContent(owner, repo, dirPath);
+  const files = {};
 
-  // Build remote files map
   for (const item of contents) {
-    if (item.type === 'file' && !ignorePatterns.includes(item.path)) {
-      const fileData = await getContent(owner, repo, item.path);
-      remoteFiles[item.path] = Buffer.from(fileData.content, 'base64').toString('utf-8');
+    const itemPath = dirPath ? path.join(dirPath, item.name) : item.name;
+
+    if (item.type === 'dir') {
+      const subFiles = await fetchDirectoryContents(owner, repo, itemPath);
+      Object.assign(files, subFiles);
+    } else if (item.type === 'file') {
+      const fileData = await getContent(owner, repo, itemPath);
+      files[itemPath] = Buffer.from(fileData.content, 'base64').toString('utf-8');
     }
   }
+
+  return files;
+}
+
+export async function downloadFiles(owner, repo, ignorePatterns = []) {
+  logger.info('Fetching repository contents...');
+  const remoteFiles = await fetchDirectoryContents(owner, repo);
+  const localSnapshot = readSnapshot();
 
   // Sync files and track changes
   const changes = syncFiles(remoteFiles, localSnapshot, ignorePatterns);

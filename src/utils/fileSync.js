@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { logger } from './logger.js';
 
 export function syncFiles(remoteFiles, localFiles, ignorePatterns) {
@@ -8,30 +9,66 @@ export function syncFiles(remoteFiles, localFiles, ignorePatterns) {
     deleted: []
   };
 
-  // Handle new and updated files
-  for (const [path, content] of Object.entries(remoteFiles)) {
-    if (ignorePatterns.includes(path)) continue;
+  // Get list of all local files that actually exist
+  const existingLocalFiles = Object.keys(localFiles).filter(file => fs.existsSync(file));
 
-    if (!localFiles[path]) {
-      fs.writeFileSync(path, content);
-      changes.added.push(path);
-    } else if (localFiles[path] !== content) {
-      fs.writeFileSync(path, content);
-      changes.updated.push(path);
+  // Handle new and updated files from remote
+  for (const [filePath, content] of Object.entries(remoteFiles)) {
+    if (ignorePatterns.includes(filePath)) continue;
+
+    const dir = path.dirname(filePath);
+    if (dir !== '.') {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    if (!localFiles[filePath]) {
+      fs.writeFileSync(filePath, content);
+      changes.added.push(filePath);
+    } else if (localFiles[filePath] !== content) {
+      fs.writeFileSync(filePath, content);
+      changes.updated.push(filePath);
     }
   }
 
-  // Handle deleted files
-  for (const path of Object.keys(localFiles)) {
-    if (ignorePatterns.includes(path)) continue;
+  // Handle files that exist locally but not in remote
+  for (const filePath of existingLocalFiles) {
+    if (ignorePatterns.includes(filePath)) continue;
     
-    if (!remoteFiles[path]) {
-      if (fs.existsSync(path)) {
-        fs.unlinkSync(path);
-        changes.deleted.push(path);
+    // If file exists locally but not in remote, delete it
+    if (!remoteFiles[filePath]) {
+      try {
+        fs.unlinkSync(filePath);
+        changes.deleted.push(filePath);
+      } catch (error) {
+        logger.debug(`Failed to delete ${filePath}: ${error.message}`);
       }
     }
   }
 
+  // Clean up empty directories
+  cleanEmptyDirs('.');
+
   return changes;
+}
+
+function cleanEmptyDirs(dir) {
+  if (dir === '.' || !fs.existsSync(dir)) return;
+  
+  const files = fs.readdirSync(dir);
+  
+  for (const file of files) {
+    const fullPath = path.join(dir, file);
+    if (fs.statSync(fullPath).isDirectory()) {
+      cleanEmptyDirs(fullPath);
+      
+      // Try to remove directory if empty
+      try {
+        if (fs.readdirSync(fullPath).length === 0) {
+          fs.rmdirSync(fullPath);
+        }
+      } catch (error) {
+        logger.debug(`Failed to remove directory ${fullPath}: ${error.message}`);
+      }
+    }
+  }
 }
