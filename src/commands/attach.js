@@ -1,10 +1,11 @@
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
-import { downloadContents } from '../github/content.js';
+import { downloadFiles } from '../utils/download.js';
 import { writeFile } from '../utils/fs.js';
 import { createSnapshot } from '../utils/snapshot.js';
 import { writeConfig } from '../utils/config.js';
 import { getLatestCommit } from '../utils/commits.js';
+import { getChangedFiles } from '../utils/diff.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -41,8 +42,11 @@ async function attachRepository(owner, repo) {
   const commitHash = await getLatestCommit(owner, repo);
   logger.info(`Latest commit: ${commitHash}`);
   
-  // Download repository contents
-  await processContents(owner, repo);
+  // Get list of changed files
+  const changedFiles = await getChangedFiles(owner, repo);
+  
+  // Download only changed files
+  await downloadFiles(owner, repo, changedFiles);
   
   // Initialize config with remote info and commit hash
   const config = {
@@ -59,20 +63,4 @@ async function attachRepository(owner, repo) {
 
   // Create initial snapshot after all files are downloaded
   await createSnapshot('.');
-}
-
-async function processContents(owner, repo, currentPath = '') {
-  const contents = await downloadContents(owner, repo, currentPath);
-  
-  for (const item of contents) {
-    const itemPath = path.join(currentPath, item.name);
-    logger.debug(`Processing: ${itemPath}`);
-    
-    if (item.type === 'dir') {
-      fs.mkdirSync(itemPath, { recursive: true });
-      await processContents(owner, repo, itemPath);
-    } else if (item.type === 'file' && item.content) {
-      writeFile(itemPath, item.content);
-    }
-  }
 }

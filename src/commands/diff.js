@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { getIgnorePatterns } from '../utils/ignore.js';
-import { shouldIgnoreFile, showFileDiff } from '../utils/diff.js';
+import { shouldIgnoreFile, showFileDiff } from '../utils/diff/index.js';
 import { glob } from 'glob';
 import fs from 'fs';
 import path from 'path';

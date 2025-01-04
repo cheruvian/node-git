@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { logger } from './logger.js';
-import { showFileDiff } from './diff.js';
+import { showFileDiff } from './diff/index.js';
 
 export function displayChanges(changes, snapshot) {
   const { modified, deleted } = changes;

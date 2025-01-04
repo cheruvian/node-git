@@ -1,7 +1,7 @@
 import { logger } from './logger.js';
 import { glob } from 'glob';
 import fs from 'fs';
-import { showFileDiff } from './diff.js';
+import { showFileDiff } from './diff/index.js';
 import { GIT_IGNORE_PATTERNS } from './gitPaths.js';
 
 export async function detectLocalChanges(snapshot, ignorePatterns) {

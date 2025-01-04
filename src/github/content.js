@@ -12,16 +12,18 @@ export async function downloadContents(owner, repo, path = '') {
     );
     
     if (!Array.isArray(contents)) {
-      const { content = '', encoding = 'base64' } = contents;
-      contents.content = Buffer.from(content, encoding).toString('utf-8');
+      if (contents.content) {
+        contents.content = Buffer.from(contents.content, 'base64').toString('utf-8');
+      }
       return [contents];
     }
 
     const contentPromises = contents.map(async item => {
-      if (item.type === 'file') {
+      if (item.type === 'file' && item.download_url) {
         const fileData = await fetchWithRetry(item.url);
-        const { content = '', encoding = 'base64' } = fileData;
-        item.content = Buffer.from(content, encoding).toString('utf-8');
+        if (fileData.content) {
+          item.content = Buffer.from(fileData.content, 'base64').toString('utf-8');
+        }
       }
       return item;
     });
