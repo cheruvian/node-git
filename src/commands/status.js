@@ -3,8 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import { logger } from '../utils/logger.js';
-import { getIgnorePatterns } from '../utils/ignore.js';
 import { getCommitInfo } from '../utils/status/commitInfo.js';
+import { getGitignorePatterns } from '../utils/gitignore.js';
 import { displayCommitInfo } from '../utils/status/display.js';
 
 export async function status() {
@@ -18,7 +18,7 @@ export async function status() {
     const snapshotFiles = Object.keys(snapshot);
 
     // Get ignore patterns
-    const ignorePatterns = getIgnorePatterns();
+    const ignorePatterns = getGitignorePatterns();
 
     // Get all files except ignored ones
     const currentFiles = await glob('**/*', { 

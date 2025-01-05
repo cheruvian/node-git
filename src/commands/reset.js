@@ -1,9 +1,10 @@
-import { logger } from '../utils/logger.js';
-import { readSnapshot } from '../utils/snapshot.js';
-import { writeFile } from '../utils/fs.js';
-import { getIgnorePatterns } from '../utils/ignore.js';
-import { glob } from 'glob';
 import fs from 'fs';
+import { glob } from 'glob';
+
+import { logger } from '../utils/logger.js';
+import { writeFile } from '../utils/fs.js';
+import { readSnapshot } from '../utils/snapshot.js';
+import { getGitignorePatterns } from '../utils/gitignore.js';
 
 export async function reset(filepath) {
   try {
@@ -19,7 +20,7 @@ export async function reset(filepath) {
     }
 
     // Get ignore patterns
-    const ignorePatterns = getIgnorePatterns();
+    const ignorePatterns = getGitignorePatterns();
 
     if (filepath) {
       // Reset single file

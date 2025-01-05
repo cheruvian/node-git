@@ -1,13 +1,13 @@
 import { logger } from '../utils/logger.js';
-import { validateGitHubToken } from '../utils/validation.js';
-import { getRemoteState } from '../utils/remoteState.js';
+import { updateConfig } from '../utils/config.js';
 import { downloadFiles } from '../utils/download.js';
-import { createSnapshot, readSnapshot } from '../utils/snapshot.js';
-import { getIgnorePatterns } from '../utils/ignore.js';
-import { detectLocalChanges } from '../utils/changes.js';
 import { displayChanges } from '../utils/display.js';
 import { syncWithRemote } from '../utils/sync.js';
-import { updateConfig } from '../utils/config.js';
+import { getRemoteState } from '../utils/remoteState.js';
+import { getGitignorePatterns } from '../utils/gitignore.js';
+import { detectLocalChanges } from '../utils/changes.js';
+import { validateGitHubToken } from '../utils/validation.js';
+import { createSnapshot, readSnapshot } from '../utils/snapshot.js';
 
 export async function pull(options = { force: false, dryRun: false }) {
   try {
@@ -20,7 +20,7 @@ export async function pull(options = { force: false, dryRun: false }) {
 
     // Check for local changes
     const snapshot = readSnapshot();
-    const ignorePatterns = getIgnorePatterns();
+    const ignorePatterns = getGitignorePatterns();
     
     const { hasChanges, changes } = await detectLocalChanges(snapshot, ignorePatterns);
     

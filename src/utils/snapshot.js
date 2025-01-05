@@ -1,17 +1,18 @@
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
 import { minimatch } from 'minimatch';
+
+import { glob } from 'glob';
 import { logger } from './logger.js';
-import { getIgnorePatterns } from './ignore.js';
 import { ensureDir } from './fs.js';
+import { getGitignorePatterns } from './gitignore.js';
 import { getGitPath, GIT_IGNORE_PATTERNS, GIT_DIR } from './gitPaths.js';
 
 export async function createSnapshot(directory = '.') {
   // Ensure git directory exists
   ensureDir(path.join(directory, GIT_DIR));
 
-  const ignorePatterns = getIgnorePatterns(directory);
+  const ignorePatterns = getGitignorePatterns();
 
   const files = await glob('**/*', { 
     cwd: directory,

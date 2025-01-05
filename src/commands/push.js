@@ -1,13 +1,14 @@
-import { logger } from '../utils/logger.js';
-import { validateGitHubToken } from '../utils/validation.js';
-import { getRepo } from '../github/api.js';
-import { createCommit } from '../github/commits.js';
-import { readConfig, writeConfig } from '../utils/config.js';
-import { createSnapshot } from '../utils/snapshot.js';
-import { glob } from 'glob';
-import { getIgnorePatterns } from '../utils/ignore.js';
 import fs from 'fs';
 import path from 'path';
+import { glob } from 'glob';
+
+import { logger } from '../utils/logger.js';
+import { getRepo } from '../github/api.js';
+import { createCommit } from '../github/commits.js';
+import { createSnapshot } from '../utils/snapshot.js';
+import { getGitignorePatterns } from '../utils/gitignore.js';
+import { validateGitHubToken } from '../utils/validation.js';
+import { readConfig, writeConfig } from '../utils/config.js';
 
 export async function push(message, options) {
   try {
@@ -34,7 +35,7 @@ export async function push(message, options) {
     const files = await glob('**/*', { 
       cwd: directory,
       nodir: true,
-      ignore: getIgnorePatterns(directory)
+      ignore: getGitignorePatterns(directory)
     });
 
     // Prepare changes for commit

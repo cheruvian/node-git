@@ -1,7 +1,9 @@
-import chalk from 'chalk';
-import { glob } from 'glob';
 import fs from 'fs';
 import path from 'path';
+import chalk from 'chalk';
+import { glob } from 'glob';
+
+import { getGitignorePatterns } from '../utils/gitignore.js';
 
 export async function add(files) {
   try {
@@ -33,20 +35,5 @@ export async function add(files) {
   } catch (error) {
     console.error(chalk.red(`Add failed: ${error.message}`));
     process.exit(1);
-  }
-}
-
-function getGitignorePatterns() {
-  try {
-    const gitignorePath = path.join(process.cwd(), '.gitignore');
-    if (fs.existsSync(gitignorePath)) {
-      return fs.readFileSync(gitignorePath, 'utf-8')
-        .split('\n')
-        .filter(line => line && !line.startsWith('#'))
-        .map(pattern => pattern.trim());
-    }
-    return [];
-  } catch (error) {
-    return [];
   }
 }

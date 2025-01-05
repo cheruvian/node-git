@@ -1,9 +1,10 @@
-import { logger } from '../utils/logger.js';
-import { getIgnorePatterns } from '../utils/ignore.js';
-import { shouldIgnoreFile, showFileDiff } from '../utils/diff/index.js';
-import { glob } from 'glob';
 import fs from 'fs';
 import path from 'path';
+import { glob } from 'glob';
+
+import { logger } from '../utils/logger.js';
+import { getGitignorePatterns } from '../utils/gitignore.js';
+import { shouldIgnoreFile, showFileDiff } from '../utils/diff/index.js';
 
 export async function diff(filepath) {
   try {
@@ -17,7 +18,7 @@ export async function diff(filepath) {
     const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8'));
     
     // Get ignore patterns
-    const ignorePatterns = getIgnorePatterns();
+    const ignorePatterns = getGitignorePatterns();
 
     if (filepath) {
       // Single file diff
