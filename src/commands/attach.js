@@ -1,13 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../utils/logger.js';
-import { fetchFileContent, fetchDirectoryContents } from '../utils/github/content.js';
 import { writeConfig } from '../utils/config.js';
 import { writeFile } from '../utils/fs.js';
 import { createSnapshot } from '../utils/snapshot.js';
 import { getLatestCommit } from '../utils/commits.js';
 import { validateGitHubToken } from '../utils/validation.js';
-import { getGitignorePatterns } from '../utils/gitignore.js';
+import { fetchFileContent, fetchDirectoryContents } from '../utils/github/content.js';
 
 export async function attach(repoPath, options = {}) {
   try {
