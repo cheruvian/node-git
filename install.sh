@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
 # Installation directory
 INSTALL_DIR="$HOME/bin"
 BINARY_NAME="git"
@@ -17,7 +12,7 @@ echo "Installing node-git..."
 mkdir -p "$INSTALL_DIR"
 
 # Download the binary
-if curl -fsSL "$REPO_URL" > "$BINARY_PATH"; then
+if curl "$REPO_URL" > "$BINARY_PATH"; then
     # Make binary executable
     chmod +x "$BINARY_PATH"
 
@@ -27,9 +22,9 @@ if curl -fsSL "$REPO_URL" > "$BINARY_PATH"; then
     # Create alias for current session
     alias git="$BINARY_PATH"
 
-    echo -e "${GREEN}✓ Installation successful!${NC}"
+    echo "${GREEN}✓ Installation successful!${NC}"
     echo "You can now use 'git' command in this session"
 else
-    echo -e "${RED}✗ Installation failed${NC}"
+    echo "${RED}✗ Installation failed${NC}"
     exit 1
 fi
