@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger.js';
-import { updateConfig } from '../utils/config.js';
+import { readConfig, updateConfig } from '../utils/config.js';
 import { downloadFiles } from '../utils/download.js';
 import { displayChanges } from '../utils/display.js';
 import { syncWithRemote } from '../utils/sync.js';
@@ -29,7 +29,10 @@ export async function pull(options = { force: false, dryRun: false }) {
       throw new Error('Cannot pull with local changes. Commit or reset your changes first, or use --force to override.');
     }
 
-    logger.info(`${options.dryRun ? '[DRY RUN] ' : ''}Pulling from ${remote.owner}/${remote.repo}...`);
+    const config = readConfig();
+    const currentCommit = config.lastCommit;
+    logger.info(`${options.dryRun ? '[DRY RUN] ' : ''}Pulling from ${remote.owner}/${remote.repo}`);
+    logger.info(`Current commit: ${currentCommit}`);
     
     // Get remote changes based on commit diff
     const { remoteCommit, changes: remoteChanges } = await syncWithRemote(
@@ -39,9 +42,17 @@ export async function pull(options = { force: false, dryRun: false }) {
       ignorePatterns
     );
 
+    logger.info(`Remote commit: ${remoteCommit}`);
+
     // Show changes that would be pulled
     if (remoteChanges) {
       logger.info('\nChanges to pull:');
+      if (remoteChanges.renamed?.length) {
+        logger.info('\nRenamed files:');
+        remoteChanges.renamed.forEach(({ from, to }) => 
+          logger.info(`  * ${from} → ${to}`)
+        );
+      }
       if (remoteChanges.added?.length) {
         logger.info('\nNew files:');
         remoteChanges.added.forEach(f => logger.info(`  + ${f}`));

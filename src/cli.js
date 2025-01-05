@@ -35,6 +35,7 @@ program
   .command('attach')
   .description('Initialize current directory and clone repository into it')
   .argument('<repo>', 'Repository in format owner/repo')
+  .option('-c, --commit <hash>', 'Specific commit hash to attach to')
   .action(attach);
 
 program

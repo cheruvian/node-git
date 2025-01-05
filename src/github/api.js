@@ -10,9 +10,10 @@ export async function getRepo(owner, repo) {
   return githubFetch(`/repos/${owner}/${repo}`);
 }
 
-export async function getContent(owner, repo, path = '') {
+export async function getContent(owner, repo, path = '', ref = '') {
   logger.debug(`Fetching contents for ${owner}/${repo}/${path}...`);
-  return githubFetch(`/repos/${owner}/${repo}/contents/${path}`);
+  const query = ref ? `?ref=${ref}` : '';
+  return githubFetch(`/repos/${owner}/${repo}/contents/${path}${query}`);
 }
 
 export { createCommit, downloadContents };
