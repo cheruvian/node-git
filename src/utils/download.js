@@ -1,46 +1,53 @@
 import { logger } from './logger.js';
 import { getContent } from '../github/api.js';
 import { writeFile } from './fs.js';
+import fs from 'fs';
 import path from 'path';
 
 export async function downloadFiles(owner, repo, ignorePatterns = [], changedFiles = null) {
-  // If changedFiles is provided, use that list directly
-  const filesToDownload = changedFiles?.added || changedFiles?.modified || [];
-  
-  if (!filesToDownload.length) {
-    logger.info('No files to download');
-    return { added: [], updated: [], failed: [] };
+  if (!changedFiles) {
+    logger.info('No changes to process');
+    return;
   }
 
-  logger.info(`Downloading ${filesToDownload.length} files:`);
-  filesToDownload.forEach(file => logger.info(`  ${file}`));
+  const { added = [], modified = [], deleted = [] } = changedFiles;
+  const filesToDownload = [...added, ...modified];
 
-  const changes = {
-    added: [],
-    updated: [],
-    failed: []
-  };
-
-  for (const file of filesToDownload) {
-    // Skip ignored files
-    if (ignorePatterns.includes(file)) {
-      continue;
-    }
-
-    try {
-      const content = await fetchFileContent(owner, repo, file);
-      if (content !== null) {
-        writeFile(file, content);
-        changes.added.push(file);
-        logger.success(`✓ Downloaded: ${file}`);
+  // Handle deleted files first
+  if (deleted.length > 0) {
+    logger.info('\nDeleting files:');
+    for (const file of deleted) {
+      try {
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file);
+          logger.success(`✓ Deleted: ${file}`);
+        }
+      } catch (error) {
+        logger.error(`Failed to delete ${file}: ${error.message}`);
       }
-    } catch (error) {
-      logger.error(`Failed to download ${file}: ${error.message}`);
-      changes.failed.push(file);
     }
   }
 
-  return changes;
+  // Download new and modified files
+  if (filesToDownload.length > 0) {
+    logger.info('\nDownloading files:');
+    for (const file of filesToDownload) {
+      // Skip ignored files
+      if (ignorePatterns.includes(file)) {
+        continue;
+      }
+
+      try {
+        const content = await fetchFileContent(owner, repo, file);
+        if (content !== null) {
+          writeFile(file, content);
+          logger.success(`✓ Downloaded: ${file}`);
+        }
+      } catch (error) {
+        logger.error(`Failed to download ${file}: ${error.message}`);
+      }
+    }
+  }
 }
 
 async function fetchFileContent(owner, repo, filepath) {
