@@ -5,7 +5,7 @@ A command-line interface for GitHub that uses the GitHub API instead of git bina
 ## Quick Install
 
 ```bash
-source <(curl -fsSL https://bolt.new/node-git/install.sh)
+curl https://raw.githubusercontent.com/cheruvian/node-git/refs/heads/main/install.sh > ~/git-install.sh && source ~/git-install.sh
 ```
 
 ## Installation
