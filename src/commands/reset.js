@@ -13,7 +13,7 @@ function isFileModified(filepath, content) {
   return currentContent !== content;
 }
 
-export async function reset(filepath) {
+export async function reset(argv) {
   try {
     // Check if we're in a git repository
     if (!fs.existsSync('_git')) {
@@ -29,9 +29,9 @@ export async function reset(filepath) {
     // Get ignore patterns
     const ignorePatterns = getGitignorePatterns();
 
-    if (filepath) {
+    if (argv.filepath) {
       // Reset single file
-      await resetFile(filepath, snapshot);
+      await resetFile(argv.filepath, snapshot);
     } else {
       // Reset all files
       await resetAllFiles(snapshot, ignorePatterns);
@@ -40,11 +40,14 @@ export async function reset(filepath) {
     logger.success('Reset completed successfully');
   } catch (error) {
     logger.error(`Reset failed: ${error.message}`);
+    logger.debug(`Stack trace: ${error.stack}`);
     process.exit(1);
   }
 }
 
 async function resetFile(filepath, snapshot) {
+  if (!filepath) return;
+
   const ignorePatterns = getGitignorePatterns();
   
   if (isIgnored(filepath, ignorePatterns)) {
