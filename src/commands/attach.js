@@ -83,7 +83,6 @@ async function downloadAllFiles(owner, repo, currentPath = '') {
   
   for (const item of contents) {
     const itemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
-    logger.info(`Processing: ${itemPath} (${item.type})`);
     
     if (item.type === 'dir') {
       logger.debug(`Creating directory: ${itemPath}`);
@@ -95,7 +94,6 @@ async function downloadAllFiles(owner, repo, currentPath = '') {
       if (fileData.content) {
         const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
         writeFile(itemPath, content);
-        logger.info(`Downloaded: ${itemPath}`);
       } else {
         logger.warn(`No content found for file: ${itemPath}`);
       }
