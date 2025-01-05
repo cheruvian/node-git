@@ -1,10 +1,9 @@
 import fs from 'fs';
 import { glob } from 'glob';
-
 import { logger } from '../utils/logger.js';
 import { writeFile } from '../utils/fs.js';
 import { readSnapshot } from '../utils/snapshot.js';
-import { getGitignorePatterns } from '../utils/gitignore.js';
+import { getGitignorePatterns, isIgnored } from '../utils/patterns/gitignore.js';
 
 export async function reset(filepath) {
   try {
@@ -38,6 +37,13 @@ export async function reset(filepath) {
 }
 
 async function resetFile(filepath, snapshot) {
+  const ignorePatterns = getGitignorePatterns();
+  
+  if (isIgnored(filepath, ignorePatterns)) {
+    logger.debug(`Skipping ignored file: ${filepath}`);
+    return;
+  }
+
   if (!(filepath in snapshot)) {
     throw new Error(`File ${filepath} not found in snapshot`);
   }
@@ -48,17 +54,15 @@ async function resetFile(filepath, snapshot) {
 
 async function resetAllFiles(snapshot, ignorePatterns) {
   // Get all current files
-  const currentFiles = await glob('**/*', {
+  const currentFiles = await glob('**/*', { 
     dot: true,
     nodir: true,
-    ignore: ['_git/**', '_git']
+    ignore: ignorePatterns
   });
 
   // Reset files from snapshot
   for (const [file, content] of Object.entries(snapshot)) {
-    if (!ignorePatterns.some(pattern => 
-      pattern === file || pattern.includes(file)
-    )) {
+    if (!isIgnored(file, ignorePatterns)) {
       writeFile(file, content);
       logger.info(`Reset ${file}`);
     }
@@ -66,9 +70,7 @@ async function resetAllFiles(snapshot, ignorePatterns) {
 
   // Remove files that don't exist in snapshot
   for (const file of currentFiles) {
-    if (!(file in snapshot) && !ignorePatterns.some(pattern => 
-      pattern === file || pattern.includes(file)
-    )) {
+    if (!(file in snapshot) && !isIgnored(file, ignorePatterns)) {
       fs.unlinkSync(file);
       logger.info(`Removed ${file}`);
     }
