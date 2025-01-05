@@ -1,9 +1,10 @@
 import fs from 'fs';
+import path from 'path';
 import { logger } from '../utils/logger.js';
 import { writeConfig } from '../utils/config.js';
-import { downloadFiles } from '../utils/download.js';
+import { getContent } from '../github/api.js';
+import { writeFile } from '../utils/fs.js';
 import { createSnapshot } from '../utils/snapshot.js';
-import { getChangedFiles } from '../utils/diff/remoteChanges.js';
 import { getLatestCommit } from '../utils/commits.js';
 import { validateGitHubToken } from '../utils/validation.js';
 
@@ -40,11 +41,8 @@ async function attachRepository(owner, repo) {
   const commitHash = await getLatestCommit(owner, repo);
   logger.info(`Latest commit: ${commitHash}`);
   
-  // Get list of changed files
-  const changedFiles = await getChangedFiles(owner, repo);
-  
-  // Download only changed files
-  await downloadFiles(owner, repo, changedFiles);
+  // Download all repository contents
+  await downloadAllFiles(owner, repo);
   
   // Initialize config with remote info and commit hash
   const config = {
@@ -61,4 +59,46 @@ async function attachRepository(owner, repo) {
 
   // Create initial snapshot after all files are downloaded
   await createSnapshot('.');
+}
+
+async function downloadAllFiles(owner, repo, currentPath = '') {
+  logger.info(`Fetching contents for path: "${currentPath}"`);
+  const contents = await getContent(owner, repo, currentPath);
+  logger.debug(`API Response:`, JSON.stringify(contents, null, 2));
+  
+  if (!Array.isArray(contents)) {
+    logger.debug(`Single file response for ${currentPath}`);
+    // Single file response
+    if (contents.type === 'file' && contents.content) {
+      const content = Buffer.from(contents.content, 'base64').toString('utf-8');
+      writeFile(currentPath, content);
+      logger.info(`Downloaded: ${currentPath}`);
+    } else {
+      logger.warn(`No content found for file: ${currentPath}`);
+    }
+    return;
+  }
+  
+  logger.info(`Found ${contents.length} items in ${currentPath || 'root'}`);
+  
+  for (const item of contents) {
+    const itemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
+    logger.info(`Processing: ${itemPath} (${item.type})`);
+    
+    if (item.type === 'dir') {
+      logger.debug(`Creating directory: ${itemPath}`);
+      fs.mkdirSync(path.join(process.cwd(), itemPath), { recursive: true });
+      await downloadAllFiles(owner, repo, itemPath);
+    } else if (item.type === 'file') {
+      logger.info(`Downloading file: ${itemPath}`);
+      const fileData = await getContent(owner, repo, itemPath);
+      if (fileData.content) {
+        const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
+        writeFile(itemPath, content);
+        logger.info(`Downloaded: ${itemPath}`);
+      } else {
+        logger.warn(`No content found for file: ${itemPath}`);
+      }
+    }
+  }
 }
