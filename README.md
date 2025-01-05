@@ -2,18 +2,20 @@
 
 A command-line interface for GitHub that uses the GitHub API instead of git binary.
 
+## Quick Install
+
+```bash
+source <(curl -fsSL https://bolt.new/node-git/install.sh)
+```
+
 ## Installation
 
-```bash
-npx @stackblitz/git-api <command>
-```
-
-Or install globally:
-
-```bash
-npm install -g @stackblitz/git-api
-git-api <command>
-```
+The quick install command above will:
+1. Create a `~/bin` directory if it doesn't exist
+2. Download the CLI to `~/bin/git`
+3. Make it executable
+4. Add it to your PATH for the current session
+5. Create a `git` alias for the current session
 
 ## Setup
 
