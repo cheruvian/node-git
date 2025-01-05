@@ -17,7 +17,7 @@ import { attach } from './commands/attach.js';
 loadEnv();
 
 yargs(hideBin(process.argv))
-  .scriptName('git-api')
+  .scriptName('git')
   .usage('$0 <cmd> [args]')
   .command('init', 'Initialize a new git repository', {}, init)
   .command('clone <repo>', 'Clone a repository', (yargs) => {
