@@ -4,7 +4,6 @@ import { clone } from './clone.js';
 import { push } from './push.js';
 import { readConfig, writeConfig } from '../utils/config.js';
 import { createDirectory } from '../utils/fs.js';
-import path from 'path';
 import fs from 'fs';
 
 export async function submodule(command, repoPath, options) {

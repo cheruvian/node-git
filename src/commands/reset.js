@@ -4,7 +4,6 @@ import { writeFile } from '../utils/fs.js';
 import { getIgnorePatterns } from '../utils/ignore.js';
 import { glob } from 'glob';
 import fs from 'fs';
-import path from 'path';
 
 export async function reset(filepath) {
   try {

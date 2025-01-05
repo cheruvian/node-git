@@ -1,7 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { fetchWithRetry } from '../utils/http.js';
-
-const BASE_URL = 'https://api.github.com';
+import { BASE_URL } from './api.js';
 
 export async function downloadContents(owner, repo, path = '') {
   logger.debug(`Downloading contents for ${owner}/${repo}/${path}...`);

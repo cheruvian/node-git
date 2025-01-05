@@ -1,6 +1,6 @@
 import { logger } from './logger.js';
-import { getLatestCommit, getLocalCommit, getCommitDiff } from './commits.js';
 import { getContent } from '../github/api.js';
+import { getLatestCommit, getLocalCommit, getCommitDiff } from './commits.js';
 
 export async function syncWithRemote(owner, repo) {
   const localCommit = getLocalCommit();

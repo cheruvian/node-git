@@ -1,25 +1,5 @@
 import { logger } from '../utils/logger.js';
-
-const BASE_URL = 'https://api.github.com';
-
-async function githubFetch(path, options = {}) {
-  const url = `${BASE_URL}${path}`;
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    ...options
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`GitHub API error: ${response.status} ${error}`);
-  }
-
-  return response.json();
-}
+import { githubFetch } from './fetch.js';
 
 export async function createCommit(owner, repo, message, changes) {
   logger.debug(`Creating commit in ${owner}/${repo}...`);

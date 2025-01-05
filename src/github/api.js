@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger.js';
 import { fetchWithRetry } from '../utils/http.js';
 
-const BASE_URL = 'https://api.github.com';
+export const BASE_URL = 'https://api.github.com';
 
 export async function getRepo(owner, repo) {
   logger.debug(`Fetching repository info for ${owner}/${repo}...`);

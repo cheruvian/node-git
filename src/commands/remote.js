@@ -3,7 +3,6 @@ import { validateGitHubToken } from '../utils/validation.js';
 import { getRepo } from '../github/api.js';
 import { readConfig, writeConfig } from '../utils/config.js';
 import fs from 'fs';
-import path from 'path';
 
 export async function remote(command, repoPath) {
   try {

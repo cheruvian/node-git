@@ -1,8 +1,7 @@
-import { logger } from './logger.js';
-import { getContent } from '../github/api.js';
-import { writeFile } from './fs.js';
 import fs from 'fs';
-import path from 'path';
+import { logger } from './logger.js';
+import { writeFile } from './fs.js';
+import { getContent } from '../github/api.js';
 
 export async function downloadFiles(owner, repo, ignorePatterns = [], changedFiles = null) {
   if (!changedFiles) {

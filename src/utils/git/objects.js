@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import zlib from 'zlib';
-import { logger } from '../logger.js';
 
 export function createGitObject(type, content) {
   // Create the header

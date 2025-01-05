@@ -1,4 +1,3 @@
-import { logger } from '../logger.js';
 import { readConfig } from '../config.js';
 
 export function getCommitInfo() {

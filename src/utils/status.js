@@ -2,12 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import { getGitignorePatterns } from './gitignore.js';
-import { logger } from './logger.js';
 
 export async function getGitStatus() {
   const gitDir = '.git';
   const indexFile = path.join(gitDir, 'index');
-  const stagingDir = path.join(gitDir, 'staging');
 
   if (!fs.existsSync(gitDir)) {
     throw new Error('Not a git repository');

@@ -1,13 +1,12 @@
-import { logger } from '../utils/logger.js';
-import { validateGitHubToken } from '../utils/validation.js';
-import { downloadFiles } from '../utils/download.js';
-import { writeFile } from '../utils/fs.js';
-import { createSnapshot } from '../utils/snapshot.js';
-import { writeConfig } from '../utils/config.js';
-import { getLatestCommit } from '../utils/commits.js';
-import { getChangedFiles } from '../utils/diff.js';
 import fs from 'fs';
-import path from 'path';
+import { logger } from '../utils/logger.js';
+import { writeConfig } from '../utils/config.js';
+import { downloadFiles } from '../utils/download.js';
+import { createSnapshot } from '../utils/snapshot.js';
+import { getChangedFiles } from '../utils/diff';
+import { getLatestCommit } from '../utils/commits.js';
+import { validateGitHubToken } from '../utils/validation.js';
+
 
 export async function attach(repoPath) {
   try {

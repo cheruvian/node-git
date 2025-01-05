@@ -1,8 +1,6 @@
-import { logger } from './logger.js';
-import { readConfig, updateConfig } from './config.js';
 import { fetchWithRetry } from './http.js';
-
-const BASE_URL = 'https://api.github.com';
+import { readConfig, updateConfig } from './config.js';
+import { BASE_URL } from '../github/api.js';
 
 export async function getLatestCommit(owner, repo, branch = 'main') {
   const url = `${BASE_URL}/repos/${owner}/${repo}/commits/${branch}`;
