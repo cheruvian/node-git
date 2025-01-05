@@ -1,12 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
-
 import { logger } from '../utils/logger.js';
-import { getRepo } from '../github/api.js';
-import { createCommit } from '../github/commits.js';
+import { getRepo, createCommit } from '../github/api.js';
 import { createSnapshot } from '../utils/snapshot.js';
-import { getGitignorePatterns } from '../utils/gitignore.js';
+import { getGitignorePatterns } from '../utils/patterns/gitignore.js';
 import { validateGitHubToken } from '../utils/validation.js';
 import { readConfig, writeConfig } from '../utils/config.js';
 

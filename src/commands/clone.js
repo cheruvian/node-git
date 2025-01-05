@@ -1,7 +1,6 @@
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
-import { getRepo } from '../github/api.js';
-import { downloadContents } from '../github/content.js';
+import { getRepo, downloadContents } from '../github/api.js';
 import { writeFile, createDirectory, ensureDir } from '../utils/fs.js';
 import { createSnapshot } from '../utils/snapshot.js';
 import { getLatestCommit } from '../utils/commits.js';

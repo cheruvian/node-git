@@ -1,9 +1,10 @@
+import fs from 'fs';
+import path from 'path';
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
 import { createCommit } from '../github/commits.js';
 import { getGitStatus } from '../utils/status.js';
-import fs from 'fs';
-import path from 'path';
+import { getConfigPath } from '../utils/gitPaths.js';
 
 export async function commit(message) {
   try {
@@ -24,7 +25,7 @@ export async function commit(message) {
       content: fs.readFileSync(path.join(process.cwd(), file), 'utf-8')
     }));
 
-    const configPath = path.join(process.cwd(), '.git', 'config');
+    const configPath = getConfigPath();
     const config = fs.readFileSync(configPath, 'utf-8');
     const remoteUrl = config.match(/url = https:\/\/github.com\/(.+)\/(.+).git/);
     

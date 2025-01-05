@@ -1,11 +1,10 @@
 import fs from 'fs';
-import path from 'path';
 import { logger } from './logger.js';
+import { GIT_DIR, getGitPath } from './gitPaths.js';
 
 export function initializeGitState(owner, repo, files) {
-  const gitDir = path.join('.git');
-  const stagingDir = path.join(gitDir, 'staging');
-  const indexFile = path.join(gitDir, 'index');
+  const stagingDir = getGitPath('staging');
+  const indexFile = getGitPath('index');
 
   // Create staging directory
   if (!fs.existsSync(stagingDir)) {

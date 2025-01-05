@@ -1,15 +1,13 @@
 import fs from 'fs';
-import path from 'path';
 import { glob } from 'glob';
-
 import { logger } from '../utils/logger.js';
-import { getGitignorePatterns } from '../utils/gitignore.js';
+import { getGitignorePatterns } from '../utils/patterns/gitignore.js';
 import { shouldIgnoreFile, showFileDiff } from '../utils/diff/index.js';
+import { getSnapshotPath } from '../utils/gitPaths.js';
 
 export async function diff(filepath) {
   try {
-    // Check if we're in a git repository
-    const snapshotPath = path.join('_git', 'snapshot.json');
+    const snapshotPath = getSnapshotPath();
     if (!fs.existsSync(snapshotPath)) {
       throw new Error('Not a git repository');
     }
@@ -30,7 +28,7 @@ export async function diff(filepath) {
       const workingFiles = await glob('**/*', {
         dot: true,
         nodir: true,
-        ignore: ['_git/**', '_git']
+        ignore: ignorePatterns
       });
 
       // Combine and deduplicate files

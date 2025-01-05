@@ -2,17 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { glob } from 'glob';
-
-import { getGitignorePatterns } from '../utils/gitignore.js';
+import { getGitignorePatterns } from '../utils/patterns/gitignore.js';
+import { getStagingPath } from '../utils/gitPaths.js';
 
 export async function add(files) {
   try {
-    const gitPath = path.join(process.cwd(), '.git');
-    const stagingPath = path.join(gitPath, 'staging');
-
-    if (!fs.existsSync(gitPath)) {
-      throw new Error('Not a git repository');
-    }
+    const stagingPath = getStagingPath();
 
     if (!fs.existsSync(stagingPath)) {
       fs.mkdirSync(stagingPath, { recursive: true });

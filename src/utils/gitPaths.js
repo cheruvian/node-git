@@ -1,9 +1,7 @@
 import path from 'path';
 
-// Base git directory name
-export const GIT_DIR = '_git';  // Changed from '_git' to '.git'
+export const GIT_DIR = '_git';
 
-// Common git paths
 export function getGitPath(...segments) {
   return path.join(GIT_DIR, ...segments);
 }
@@ -16,7 +14,18 @@ export function getSnapshotPath() {
   return getGitPath('snapshot.json');
 }
 
-// Git ignore patterns
+export function getStagingPath() {
+  return getGitPath('staging');
+}
+
+export function getObjectsPath() {
+  return getGitPath('objects');
+}
+
+export function getRefsPath() {
+  return getGitPath('refs');
+}
+
 export const GIT_IGNORE_PATTERNS = [
   `**/${GIT_DIR}/**`,
   GIT_DIR,

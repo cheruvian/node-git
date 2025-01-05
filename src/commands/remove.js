@@ -1,13 +1,13 @@
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
+import { getStagingPath } from '../utils/gitPaths.js';
 
 export async function remove(files) {
   try {
-    const gitPath = path.join(process.cwd(), '.git');
-    const stagingPath = path.join(gitPath, 'staging');
+    const stagingPath = getStagingPath();
 
-    if (!fs.existsSync(gitPath)) {
+    if (!fs.existsSync(stagingPath)) {
       throw new Error('Not a git repository');
     }
 

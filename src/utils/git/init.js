@@ -2,9 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from '../logger.js';
 import { createGitObject, writeGitObject } from './objects.js';
+import { GIT_DIR, getGitPath } from '../gitPaths.js';
 
 export function initializeGitRepository(directory = '.') {
-  const gitDir = path.join(directory, '.git');
+  const gitDir = path.join(directory, GIT_DIR);
   
   // Create basic directory structure
   const dirs = [
@@ -13,7 +14,7 @@ export function initializeGitRepository(directory = '.') {
     'refs/tags',
     'info',
     'hooks'
-  ].map(dir => path.join(gitDir, dir));
+  ].map(dir => getGitPath(dir));
 
   dirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
@@ -22,7 +23,7 @@ export function initializeGitRepository(directory = '.') {
   });
 
   // Create initial empty tree object
-  const objectsDir = path.join(gitDir, 'objects');
+  const objectsDir = getGitPath('objects');
   const emptyTree = createGitObject('tree', '');
   writeGitObject(objectsDir, emptyTree.hash, emptyTree.content);
 
@@ -36,8 +37,8 @@ Initial commit`;
   const commitHash = writeGitObject(objectsDir, commit.hash, commit.content);
 
   // Update HEAD and main branch reference
-  fs.writeFileSync(path.join(gitDir, 'HEAD'), 'ref: refs/heads/main\n');
-  fs.writeFileSync(path.join(gitDir, 'refs', 'heads', 'main'), `${commitHash}\n`);
+  fs.writeFileSync(getGitPath('HEAD'), 'ref: refs/heads/main\n');
+  fs.writeFileSync(getGitPath('refs/heads/main'), `${commitHash}\n`);
 
   // Create basic config
   const configContent = `[core]
@@ -45,7 +46,7 @@ Initial commit`;
 \tfilemode = true
 \tbare = false
 \tlogallrefupdates = true`;
-  fs.writeFileSync(path.join(gitDir, 'config'), configContent);
+  fs.writeFileSync(getGitPath('config'), configContent);
 
   logger.debug('Git repository initialized with initial commit');
   return commitHash;

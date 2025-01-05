@@ -1,13 +1,12 @@
 import fs from 'fs';
-import path from 'path';
 import { glob } from 'glob';
-import { getGitignorePatterns } from './gitignore.js';
+import { getGitignorePatterns } from './patterns/gitignore.js';
+import { getGitPath } from './gitPaths.js';
 
 export async function getGitStatus() {
-  const gitDir = '.git';
-  const indexFile = path.join(gitDir, 'index');
+  const indexFile = getGitPath('index');
 
-  if (!fs.existsSync(gitDir)) {
+  if (!fs.existsSync(indexFile)) {
     throw new Error('Not a git repository');
   }
 
@@ -19,7 +18,7 @@ export async function getGitStatus() {
   const currentFiles = await glob('**/*', { 
     dot: true,
     nodir: true,
-    ignore: ['**/node_modules/**', '**/.git/**', ...getGitignorePatterns()]
+    ignore: getGitignorePatterns()
   });
 
   return {
