@@ -3,14 +3,17 @@ import { getContent } from '../github/api.js';
 import { writeFile } from './fs.js';
 import path from 'path';
 
-export async function downloadFiles(owner, repo, changedFiles = []) {
-  if (!changedFiles.length) {
+export async function downloadFiles(owner, repo, ignorePatterns = [], changedFiles = null) {
+  // If changedFiles is provided, use that list directly
+  const filesToDownload = changedFiles?.added || changedFiles?.modified || [];
+  
+  if (!filesToDownload.length) {
     logger.info('No files to download');
     return { added: [], updated: [], failed: [] };
   }
 
-  logger.info(`Downloading ${changedFiles.length} changed files:`);
-  changedFiles.forEach(file => logger.info(`  ${file}`));
+  logger.info(`Downloading ${filesToDownload.length} files:`);
+  filesToDownload.forEach(file => logger.info(`  ${file}`));
 
   const changes = {
     added: [],
@@ -18,7 +21,12 @@ export async function downloadFiles(owner, repo, changedFiles = []) {
     failed: []
   };
 
-  for (const file of changedFiles) {
+  for (const file of filesToDownload) {
+    // Skip ignored files
+    if (ignorePatterns.includes(file)) {
+      continue;
+    }
+
     try {
       const content = await fetchFileContent(owner, repo, file);
       if (content !== null) {
