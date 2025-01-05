@@ -1,64 +1,38 @@
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../utils/logger.js';
-import { writeConfig } from '../utils/config.js';
-import { writeFile } from '../utils/fs.js';
-import { createSnapshot } from '../utils/snapshot.js';
-import { getLatestCommit } from '../utils/commits.js';
 import { validateGitHubToken } from '../utils/validation.js';
+import { validateRepoPath } from '../utils/validation/repository.js';
+import { initializeRepository } from '../utils/repository.js';
 import { fetchFileContent, fetchDirectoryContents } from '../utils/github/content.js';
+import { writeFile } from '../utils/fs.js';
 
-export async function attach(repoPath, options = {}) {
+export async function attach(argv) {
   try {
     logger.info('Starting attach operation...');
-    validateInput(repoPath);
     validateGitHubToken();
     
-    const [owner, repo] = repoPath.split('/');
-    await attachRepository(owner, repo, options.commit);
+    const { owner, repo } = validateRepoPath(argv.repo);
+    await attachRepository(owner, repo, argv);
     
     logger.success(`✓ Repository ${owner}/${repo} attached successfully!`);
   } catch (error) {
     logger.error(`Attach failed: ${error.message}`);
+    logger.debug(`Stack trace: ${error.stack}`);
     process.exit(1);
   }
 }
 
-function validateInput(repoPath) {
-  const [owner, repo] = repoPath.split('/');
-  if (!owner || !repo) {
-    throw new Error('Invalid repository format. Use owner/repo');
-  }
-}
-
-async function attachRepository(owner, repo, commitHash) {
+async function attachRepository(owner, repo, options) {
   logger.info(`Attaching ${owner}/${repo}...`);
   
-  // Create _git directory first
-  fs.mkdirSync('_git', { recursive: true });
-  
-  // Get commit hash (specified or latest)
-  const targetCommit = commitHash || await getLatestCommit(owner, repo);
-  logger.info(`Target commit: ${targetCommit}`);
+  // Initialize repository
+  const { commitHash } = await initializeRepository(owner, repo, {
+    commit: options.commit
+  });
   
   // Download all repository contents recursively
-  await downloadAllFiles(owner, repo, '', targetCommit);
-  
-  // Initialize config with remote info and commit hash
-  const config = {
-    remote: {
-      origin: {
-        owner,
-        repo,
-        url: `https://github.com/${owner}/${repo}.git`
-      }
-    },
-    lastCommit: targetCommit
-  };
-  writeConfig(config);
-
-  // Create initial snapshot after all files are downloaded
-  await createSnapshot('.');
+  await downloadAllFiles(owner, repo, '', commitHash);
 }
 
 async function downloadAllFiles(owner, repo, currentPath = '', commit = '') {

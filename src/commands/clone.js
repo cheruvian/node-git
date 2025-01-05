@@ -1,20 +1,17 @@
 import { logger } from '../utils/logger.js';
 import { validateGitHubToken } from '../utils/validation.js';
+import { validateRepoPath } from '../utils/validation/repository.js';
+import { initializeRepository } from '../utils/repository.js';
 import { getRepo, downloadContents } from '../github/api.js';
 import { writeFile, createDirectory, ensureDir } from '../utils/fs.js';
-import { createSnapshot } from '../utils/snapshot.js';
-import { getLatestCommit } from '../utils/commits.js';
-import { writeConfig } from '../utils/config.js';
 import path from 'path';
-import fs from 'fs';
 
 export async function clone(argv) {
   try {
     logger.info('Starting clone operation...');
-    validateInput(argv.repo);
     validateGitHubToken();
     
-    const [owner, repo] = argv.repo.split('/');
+    const { owner, repo } = validateRepoPath(argv.repo, { checkExists: true });
     await cloneRepository(owner, repo);
     
     logger.success(`✓ Repository ${owner}/${repo} cloned successfully!`);
@@ -26,58 +23,21 @@ export async function clone(argv) {
   }
 }
 
-function validateInput(repoPath) {
-  if (!repoPath) {
-    throw new Error('Repository path is required');
-  }
-
-  const [owner, repo] = repoPath.split('/');
-  if (!owner || !repo) {
-    throw new Error('Invalid repository format. Use owner/repo');
-  }
-  
-  if (fs.existsSync(repo)) {
-    throw new Error(`Directory ${repo} already exists`);
-  }
-}
-
 async function cloneRepository(owner, repo) {
   logger.info(`Cloning ${owner}/${repo}...`);
   
-  const repoResp = await getRepo(owner, repo);
-  logger.info(JSON.stringify(repoResp))
+  await getRepo(owner, repo);
   createDirectory(repo);
   const currentDir = process.cwd();
   
   try {
     process.chdir(repo);
     
-    // Create _git directory first
-    ensureDir('_git');
-    
-    // Get latest commit hash
-    const commitHash = await getLatestCommit(owner, repo);
-    logger.info(`Latest commit: ${commitHash}`);
+    // Initialize repository
+    await initializeRepository(owner, repo);
     
     // Download repository contents
     await processContents(owner, repo);
-    
-    // Initialize config with remote info and commit hash
-    const config = {
-      remote: {
-        origin: {
-          owner,
-          repo,
-          url: `https://github.com/${owner}/${repo}.git`
-        }
-      },
-      lastCommit: commitHash
-    };
-    writeConfig(config);
-
-    // Create initial snapshot after all files are downloaded
-    await createSnapshot('.');
-    
   } catch (error) {
     logger.error(`Failed to download contents: ${error.message}`);
     throw error;
