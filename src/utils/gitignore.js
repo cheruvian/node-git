@@ -1,44 +1,40 @@
 import fs from 'fs';
 import path from 'path';
-import { minimatch } from 'minimatch';
 import { logger } from './logger.js';
+import { GIT_IGNORE_PATTERNS } from './gitPaths.js';
 
 export function getGitignorePatterns(directory = '.') {
-  try {
-    const gitignorePath = path.join(directory, '.gitignore');
-    if (!fs.existsSync(gitignorePath)) {
-      return [];
+  const patterns = [...GIT_IGNORE_PATTERNS];
+  const gitignorePath = path.join(directory, '.gitignore');
+
+  if (fs.existsSync(gitignorePath)) {
+    try {
+      const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
+      const customPatterns = gitignoreContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'))
+        .map(pattern => {
+          // Handle patterns that start with /
+          if (pattern.startsWith('/')) {
+            return pattern.slice(1);
+          }
+          // Handle patterns that end with /
+          if (pattern.endsWith('/')) {
+            return `${pattern}**`;
+          }
+          // Add **/ prefix for general patterns if they don't start with *
+          if (!pattern.startsWith('*')) {
+            return `**/${pattern}`;
+          }
+          return pattern;
+        });
+
+      patterns.push(...customPatterns);
+    } catch (error) {
+      logger.debug(`Error reading .gitignore: ${error.message}`);
     }
-
-    return fs.readFileSync(gitignorePath, 'utf-8')
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'))
-      .map(pattern => {
-        pattern = pattern.replace(/\/+$/, '');
-        return pattern.startsWith('/') ? pattern.slice(1) : `**/${pattern}`;
-      });
-  } catch (error) {
-    logger.debug(`Error reading .gitignore: ${error.message}`);
-    return [];
   }
-}
 
-export function getIgnoredFiles(files, directory = '.') {
-  const patterns = getGitignorePatterns(directory);
-  return files.filter(file => !isIgnored(file, patterns));
-}
-
-function isIgnored(filePath, patterns) {
-  if (!patterns?.length) return false;
-  
-  const normalizedPath = filePath.replace(/\\/g, '/');
-  return patterns.some(pattern => {
-    const fullPattern = pattern.endsWith('/') ? `${pattern}**` : pattern;
-    return minimatch(normalizedPath, fullPattern, { 
-      dot: true,
-      matchBase: true,
-      nocase: true 
-    });
-  });
+  return patterns;
 }
