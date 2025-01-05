@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/cli.js",
   "description": "A (neutered) GitHub CLI that uses the GitHub API instead of git binary",
   "bin": {
     "bolt-git": "./dist/cli.js"
@@ -14,14 +15,13 @@
   ],
   "scripts": {
     "start": "node src/cli.js",
-    "build": "node build.js",
+    "build": "node build.js && chmod +x dist/cli.js",
     "bolt-snapshot": "cp -r ~/project ~/backup",
     "bolt-restore": "cp -r ~/backup ~/project",
     "postinstall": "chmod +x ./dist/cli.js"
   },
   "dependencies": {
-    "commander": "^11.1.0",
-    "dotenv": "^16.3.1"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "esbuild": "^0.19.8",

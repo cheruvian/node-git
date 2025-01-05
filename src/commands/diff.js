@@ -5,7 +5,7 @@ import { getGitignorePatterns } from '../utils/patterns/gitignore.js';
 import { shouldIgnoreFile, showFileDiff } from '../utils/diff/index.js';
 import { getSnapshotPath } from '../utils/gitPaths.js';
 
-export async function diff(filepath) {
+export async function diff(argv) {
   try {
     const snapshotPath = getSnapshotPath();
     if (!fs.existsSync(snapshotPath)) {
@@ -18,10 +18,10 @@ export async function diff(filepath) {
     // Get ignore patterns
     const ignorePatterns = getGitignorePatterns();
 
-    if (filepath) {
+    if (argv.filepath) {
       // Single file diff
-      if (!shouldIgnoreFile(filepath, ignorePatterns)) {
-        showFileDiff(filepath, snapshot);
+      if (!shouldIgnoreFile(argv.filepath, ignorePatterns)) {
+        showFileDiff(argv.filepath, snapshot);
       }
     } else {
       // Get all files in working directory and snapshot
@@ -46,6 +46,7 @@ export async function diff(filepath) {
     }
   } catch (error) {
     logger.error(`Diff failed: ${error.message}`);
+    logger.debug(`Stack trace: ${error.stack}`);
     process.exit(1);
   }
 }

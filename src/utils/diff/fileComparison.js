@@ -2,15 +2,15 @@ import { createPatch } from 'diff';
 import { minimatch } from 'minimatch';
 import chalk from 'chalk';
 import fs from 'fs';
+import { isIgnored } from '../patterns/gitignore.js';
 
 export function shouldIgnoreFile(filepath, ignorePatterns) {
-  const normalizedPath = filepath.replace(/\\/g, '/');
-  return ignorePatterns.some(pattern => 
-    minimatch(normalizedPath, pattern, { dot: true, matchBase: true })
-  );
+  return isIgnored(filepath, ignorePatterns);
 }
 
 export function showFileDiff(filepath, snapshot) {
+  if (!filepath) return;
+  
   // Get snapshot content (empty string if not in snapshot)
   const snapshotContent = snapshot[filepath] ?? '';
   

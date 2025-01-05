@@ -8,24 +8,29 @@ import { writeConfig } from '../utils/config.js';
 import path from 'path';
 import fs from 'fs';
 
-export async function clone(repoPath) {
+export async function clone(argv) {
   try {
     logger.info('Starting clone operation...');
-    validateInput(repoPath);
+    validateInput(argv.repo);
     validateGitHubToken();
     
-    const [owner, repo] = repoPath.split('/');
+    const [owner, repo] = argv.repo.split('/');
     await cloneRepository(owner, repo);
     
     logger.success(`✓ Repository ${owner}/${repo} cloned successfully!`);
     logger.info(`Directory: ${repo}`);
   } catch (error) {
     logger.error(`Clone failed: ${error.message}`);
+    logger.debug(`Stack trace: ${error.stack}`);
     process.exit(1);
   }
 }
 
 function validateInput(repoPath) {
+  if (!repoPath) {
+    throw new Error('Repository path is required');
+  }
+
   const [owner, repo] = repoPath.split('/');
   if (!owner || !repo) {
     throw new Error('Invalid repository format. Use owner/repo');

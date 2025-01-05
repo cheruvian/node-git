@@ -66,14 +66,11 @@ function normalizePattern(pattern) {
 }
 
 export function isIgnored(filePath, patterns) {
+  if (!filePath) return false;
   const normalizedPath = filePath.replace(/\\/g, '/');
   return patterns.some(pattern => minimatch(normalizedPath, pattern, {
     dot: true,
     matchBase: true,
     nocase: true
   }));
-}
-
-export function shouldIgnoreFile(filepath, ignorePatterns) {
-  return isIgnored(filepath, ignorePatterns);
 }

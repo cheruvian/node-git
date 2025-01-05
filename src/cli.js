@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { program } from 'commander';
-import { config } from 'dotenv';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { loadEnv } from './utils/env.js';
 import { clone } from './commands/clone.js';
 import { status } from './commands/status.js';
 import { diff } from './commands/diff.js';
@@ -13,75 +14,99 @@ import { reset } from './commands/reset.js';
 import { attach } from './commands/attach.js';
 
 // Load .env file if it exists
-config();
+loadEnv();
 
-program
-  .name('git-api')
-  .description('GitHub CLI using GitHub API')
-  .version(process.env.npm_package_version || '1.0.0');
-
-program
-  .command('init')
-  .description('Initialize a new git repository')
-  .action(init);
-
-program
-  .command('clone')
-  .description('Clone a repository')
-  .argument('<repo>', 'Repository in format owner/repo')
-  .action(clone);
-
-program
-  .command('attach')
-  .description('Initialize current directory and clone repository into it')
-  .argument('<repo>', 'Repository in format owner/repo')
-  .option('-c, --commit <hash>', 'Specific commit hash to attach to')
-  .action(attach);
-
-program
-  .command('remote')
-  .description('Manage remote repositories')
-  .argument('<command>', 'Command to execute (add, show)')
-  .argument('[repo]', 'Repository in format owner/repo')
-  .action(remote);
-
-program
-  .command('push')
-  .description('Push code to remote repository')
-  .argument('<message>', 'Commit message')
-  .option('-d, --directory <dir>', 'Directory to push', '.')
-  .action((message, options) => push(message, options));
-
-program
-  .command('pull')
-  .description('Pull latest changes from remote repository')
-  .option('-f, --force', 'Force pull even with local changes', false)
-  .option('--dry-run', 'Show what would be pulled without making changes', false)
-  .action((options) => pull(options));
-
-program
-  .command('status')
-  .description('Show working tree status')
-  .action(status);
-
-program
-  .command('diff')
-  .description('Show changes between working tree and snapshot')
-  .argument('[filepath]', 'Optional file path to show diff for')
-  .action(diff);
-
-program
-  .command('reset')
-  .description('Reset working tree to last snapshot')
-  .argument('[filepath]', 'Optional file path to reset')
-  .action(reset);
-
-program
-  .command('submodule')
-  .description('Manage submodules')
-  .argument('<command>', 'Command to execute (add, init, update, status)')
-  .argument('[repo]', 'Repository in format owner/repo')
-  .option('-p, --path <path>', 'Path where to add the submodule', 'repo')
-  .action((command, repo, options) => submodule(command, repo, options));
-
-program.parse();
+yargs(hideBin(process.argv))
+  .scriptName('git-api')
+  .usage('$0 <cmd> [args]')
+  .command('init', 'Initialize a new git repository', {}, init)
+  .command('clone <repo>', 'Clone a repository', (yargs) => {
+    return yargs.positional('repo', {
+      describe: 'Repository in format owner/repo',
+      type: 'string'
+    });
+  }, clone)
+  .command('attach <repo>', 'Initialize current directory and clone repository into it', (yargs) => {
+    return yargs
+      .positional('repo', {
+        describe: 'Repository in format owner/repo',
+        type: 'string'
+      })
+      .option('commit', {
+        alias: 'c',
+        describe: 'Specific commit hash to attach to',
+        type: 'string'
+      });
+  }, attach)
+  .command('remote <command> [repo]', 'Manage remote repositories', (yargs) => {
+    return yargs
+      .positional('command', {
+        describe: 'Command to execute (add, show)',
+        type: 'string'
+      })
+      .positional('repo', {
+        describe: 'Repository in format owner/repo',
+        type: 'string'
+      });
+  }, remote)
+  .command('push <message>', 'Push code to remote repository', (yargs) => {
+    return yargs
+      .positional('message', {
+        describe: 'Commit message',
+        type: 'string'
+      })
+      .option('directory', {
+        alias: 'd',
+        describe: 'Directory to push',
+        default: '.',
+        type: 'string'
+      });
+  }, (argv) => push(argv.message, { directory: argv.directory }))
+  .command('pull', 'Pull latest changes from remote repository', (yargs) => {
+    return yargs
+      .option('force', {
+        alias: 'f',
+        describe: 'Force pull even with local changes',
+        type: 'boolean',
+        default: false
+      })
+      .option('dry-run', {
+        describe: 'Show what would be pulled without making changes',
+        type: 'boolean',
+        default: false
+      });
+  }, pull)
+  .command('status', 'Show working tree status', {}, status)
+  .command('diff [filepath]', 'Show changes between working tree and snapshot', (yargs) => {
+    return yargs.positional('filepath', {
+      describe: 'Optional file path to show diff for',
+      type: 'string'
+    });
+  }, diff)
+  .command('reset [filepath]', 'Reset working tree to last snapshot', (yargs) => {
+    return yargs.positional('filepath', {
+      describe: 'Optional file path to reset',
+      type: 'string'
+    });
+  }, reset)
+  .command('submodule <command> [repo]', 'Manage submodules', (yargs) => {
+    return yargs
+      .positional('command', {
+        describe: 'Command to execute (add, init, update, status)',
+        type: 'string'
+      })
+      .positional('repo', {
+        describe: 'Repository in format owner/repo',
+        type: 'string'
+      })
+      .option('path', {
+        alias: 'p',
+        describe: 'Path where to add the submodule',
+        default: 'repo',
+        type: 'string'
+      });
+  }, (argv) => submodule(argv.command, argv.repo, { path: argv.path }))
+  .demandCommand(1, 'You need at least one command before moving on')
+  .strict()
+  .help()
+  .argv;

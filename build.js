@@ -5,11 +5,12 @@ const bundle = await esbuild.build({
   bundle: true,
   platform: 'node',
   target: 'node16',
-  format: 'esm',
+  format: 'cjs',
+  banner: {
+  },
   outfile: 'dist/cli.js',
   minify: true,
   treeShaking: true,
-  external: ['commander', 'dotenv'],
   define: {
     'process.env.NODE_ENV': '"production"'
   }
