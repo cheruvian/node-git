@@ -6,7 +6,8 @@ import { validateGitHubToken } from '../utils/validation.js';
 import { validateRepoPath } from '../utils/validation/repository.js';
 import { initializeRepository } from '../utils/repository.js';
 import { fetchFileContent, fetchDirectoryContents } from '../utils/github/content.js';
-import { writeFile } from '../utils/fs.js';
+import { writeFile, createDirectory } from '../utils/fs.js';
+import { reset } from './reset.js';
 
 export async function attach(argv) {
   try {
@@ -14,32 +15,17 @@ export async function attach(argv) {
     validateGitHubToken();
     
     const { owner, repo } = validateRepoPath(argv.repo);
-    
-    // Handle destructive mode
-    if (argv.destructive) {
-      const currentDir = process.cwd();
-      const dirName = path.basename(currentDir);
-      
-      // Move up one directory
-      process.chdir('..');
-      
-      // Remove the target directory if it exists
-      if (fs.existsSync(dirName)) {
-        logger.info(`Removing existing directory: ${dirName}`);
-        fs.rmSync(dirName, { recursive: true, force: true });
-      }
-      
-      // Create fresh directory and move into it
-      fs.mkdirSync(dirName);
-      process.chdir(dirName);
-      logger.info(`Created fresh directory: ${dirName}`);
-    }
-    
     const snapshot = await attachRepository(owner, repo, argv);
     
     // Create _git directory and save snapshot
-    fs.mkdirSync('_git', { recursive: true });
+    createDirectory('_git');
     fs.writeFileSync('_git/snapshot.json', JSON.stringify(snapshot, null, 2));
+    
+    // Reset working tree if requested
+    if (argv.reset) {
+      logger.info('Resetting working tree to match snapshot...');
+      await reset({ filepath: null });
+    }
     
     logger.success(`✓ Repository ${owner}/${repo} attached successfully!`);
   } catch (error) {

@@ -37,9 +37,9 @@ yargs(hideBin(process.argv))
         describe: 'Specific commit hash to attach to',
         type: 'string'
       })
-      .option('destructive', {
-        alias: 'D',
-        describe: 'Remove existing directory before attaching',
+      .option('reset', {
+        alias: 'r',
+        describe: 'Reset working tree after attaching',
         type: 'boolean',
         default: false
       });
