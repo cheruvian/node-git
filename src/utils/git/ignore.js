@@ -7,7 +7,7 @@ export const GIT_IGNORE_PATTERNS = [
   '**/.git/**',
   '.git',
   '.git/**/*',
-  '_git',
+  '_git/**/*',
 ];
 
 export function getGitignorePatterns(directory = '.') {
