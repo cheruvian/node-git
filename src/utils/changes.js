@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { glob } from 'glob';
-import { GIT_IGNORE_PATTERNS } from './gitPaths.js';
+import { GIT_IGNORE_PATTERNS } from "./git/ignore.js";
 
 export async function detectLocalChanges(snapshot, ignorePatterns) {
   const files = await glob('**/*', { 

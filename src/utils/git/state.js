@@ -2,14 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import { logger } from '../logger.js';
-
-const GIT_IGNORE_PATTERNS = [
-  '**/node_modules/**',
-  '**/.git/**',
-  '.git',
-  '.git/**/*',
-  'package-lock.json'
-];
+import { GIT_IGNORE_PATTERNS } from "./ignore.js";
 
 export async function initializeGitState(owner, repo) {
   const gitDir = path.join('.git');

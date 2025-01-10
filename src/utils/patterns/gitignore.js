@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { minimatch } from 'minimatch';
 import { logger } from '../logger.js';
-import { GIT_IGNORE_PATTERNS } from '../gitPaths.js';
+import { GIT_IGNORE_PATTERNS } from "../git/ignore.js";
 import { escapePattern } from './escapePattern.js';
 
 // Cache for gitignore patterns

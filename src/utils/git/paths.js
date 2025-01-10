@@ -15,10 +15,3 @@ export const PATHS = {
   head: () => getGitPath('HEAD'),
   index: () => getGitPath('index')
 };
-
-export const GIT_IGNORE_PATTERNS = [
-  `**/${GIT_DIR}/**`,
-  GIT_DIR,
-  '**/node_modules/**',
-  'package-lock.json'
-];

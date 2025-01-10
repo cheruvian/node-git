@@ -6,7 +6,8 @@ import { glob } from 'glob';
 import { logger } from './logger.js';
 import { ensureDir } from './fs.js';
 import { getGitignorePatterns } from './gitignore.js';
-import { getGitPath, GIT_IGNORE_PATTERNS, GIT_DIR } from './gitPaths.js';
+import { getGitPath, GIT_DIR } from './gitPaths.js';
+import { GIT_IGNORE_PATTERNS } from "./git/ignore.js";
 
 export async function createSnapshot(directory = '.') {
   // Ensure git directory exists

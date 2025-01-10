@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { logger } from './logger.js';
-import { GIT_IGNORE_PATTERNS } from './gitPaths.js';
+import { GIT_IGNORE_PATTERNS } from "./git/ignore.js";
 
 export function getGitignorePatterns(directory = '.') {
   const patterns = [...GIT_IGNORE_PATTERNS];

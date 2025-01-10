@@ -2,6 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from '../logger.js';
 
+export const GIT_IGNORE_PATTERNS = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '.git',
+  '.git/**/*',
+  '_git',
+];
+
 export function getGitignorePatterns(directory = '.') {
   const gitignorePath = path.join(directory, '.gitignore');
   

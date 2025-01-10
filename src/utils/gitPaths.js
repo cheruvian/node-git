@@ -25,10 +25,3 @@ export function getObjectsPath() {
 export function getRefsPath() {
   return getGitPath('refs');
 }
-
-export const GIT_IGNORE_PATTERNS = [
-  `**/${GIT_DIR}/**`,
-  GIT_DIR,
-  '**/node_modules/**',
-  'package-lock.json'
-];
