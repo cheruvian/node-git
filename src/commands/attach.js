@@ -6,7 +6,7 @@ import { validateGitHubToken } from '../utils/validation.js';
 import { validateRepoPath } from '../utils/validation/repository.js';
 import { initializeRepository } from '../utils/repository.js';
 import { fetchFileContent, fetchDirectoryContents } from '../utils/github/content.js';
-import { writeFile, createDirectory } from '../utils/fs.js';
+import { writeFile } from '../utils/fs.js';
 
 export async function attach(argv) {
   try {
@@ -14,10 +14,31 @@ export async function attach(argv) {
     validateGitHubToken();
     
     const { owner, repo } = validateRepoPath(argv.repo);
+    
+    // Handle destructive mode
+    if (argv.destructive) {
+      const currentDir = process.cwd();
+      const dirName = path.basename(currentDir);
+      
+      // Move up one directory
+      process.chdir('..');
+      
+      // Remove the target directory if it exists
+      if (fs.existsSync(dirName)) {
+        logger.info(`Removing existing directory: ${dirName}`);
+        fs.rmSync(dirName, { recursive: true, force: true });
+      }
+      
+      // Create fresh directory and move into it
+      fs.mkdirSync(dirName);
+      process.chdir(dirName);
+      logger.info(`Created fresh directory: ${dirName}`);
+    }
+    
     const snapshot = await attachRepository(owner, repo, argv);
     
     // Create _git directory and save snapshot
-    createDirectory('_git');
+    fs.mkdirSync('_git', { recursive: true });
     fs.writeFileSync('_git/snapshot.json', JSON.stringify(snapshot, null, 2));
     
     logger.success(`✓ Repository ${owner}/${repo} attached successfully!`);
@@ -61,7 +82,7 @@ async function downloadAllFiles(owner, repo, tmpDir, currentPath = '', commit = 
     const tmpPath = path.join(tmpDir, itemPath);
     
     if (item.type === 'dir') {
-      fs.mkdirSync(tmpPath, { recursive: true });
+      fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
       const subSnapshot = await downloadAllFiles(owner, repo, tmpDir, itemPath, commit);
       Object.assign(snapshot, subSnapshot);
     } else if (item.type === 'file') {

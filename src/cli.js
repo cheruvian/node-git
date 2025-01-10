@@ -36,6 +36,12 @@ yargs(hideBin(process.argv))
         alias: 'c',
         describe: 'Specific commit hash to attach to',
         type: 'string'
+      })
+      .option('destructive', {
+        alias: 'D',
+        describe: 'Remove existing directory before attaching',
+        type: 'boolean',
+        default: false
       });
   }, attach)
   .command('remote <command> [repo]', 'Manage remote repositories', (yargs) => {
